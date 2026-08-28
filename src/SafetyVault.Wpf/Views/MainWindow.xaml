@@ -5,18 +5,31 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SafetyVault.Wpf"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="SafetyVault" Height="450" Width="800">
     <Grid>
-        <ListBox ItemsSource="{Binding Items}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ListBox ItemsSource="{Binding Items}" Grid.Row="0">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
                         <CheckBox IsChecked="{Binding IsPacked}" />
                         <TextBlock Margin="8,0,0,0" Text="{Binding Name}" />
                         <TextBlock Margin="8,0,0,0" Text="{Binding Quantity}" />
+                        <TextBlock Margin="8,0,0,0" Text="{Binding PackedAt}" />
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+        <Grid Margin="10" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox Text="{Binding NewItemName, UpdateSourceTrigger=PropertyChanged}" Grid.Column="0"/>
+            <Button Content="Add Item" Command="{Binding AddItemCommand}" Grid.Column="1" />
+        </Grid>
     </Grid>
 </Window>
