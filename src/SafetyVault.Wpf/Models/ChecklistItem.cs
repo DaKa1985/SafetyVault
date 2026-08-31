@@ -61,6 +61,7 @@ namespace SafetyVault.Wpf.Models
             {
                 if (_isPacked == value) return;
                 _isPacked = value;
+                PackedAt = value ? DateTime.Now : null;
                 OnPropertyChanged();
             }
         }      
