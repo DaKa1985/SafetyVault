@@ -19,6 +19,7 @@
                         <TextBlock Margin="8,0,0,0" Text="{Binding Name}" />
                         <TextBlock Margin="8,0,0,0" Text="{Binding Quantity}" />
                         <TextBlock Margin="8,0,0,0" Text="{Binding PackedAt}" />
+                        <Button Content="Delete Item" Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>

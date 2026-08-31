@@ -15,6 +15,8 @@ namespace SafetyVault.Wpf.ViewModels
             Items.Add(new ChecklistItem { Name = "Batterien", Description = "Für Taschenlampe, Radio, etc.", Quantity = 4, IsPacked = false });
             Items.Add(new ChecklistItem { Name = "Erste-Hilfe-Set", Description = "Verbandsmaterial, Desinfektionsmittel, Schmerzmittel", Quantity = 1, IsPacked = false });
             AddItemCommand = new RelayCommand(AddItem, CanAddItem);
+            DeleteItemCommand = new RelayCommand<ChecklistItem>(DeleteItem, CanDeleteItem);
+
         }
         public string NewItemName
         {
@@ -28,6 +30,8 @@ namespace SafetyVault.Wpf.ViewModels
         }
         public ObservableCollection<ChecklistItem> Items { get; } = new();
         public ICommand AddItemCommand { get; }
+        public ICommand DeleteItemCommand { get; }
+
         private void AddItem()
         {
             Items.Add(new ChecklistItem { Name = NewItemName });
@@ -37,5 +41,12 @@ namespace SafetyVault.Wpf.ViewModels
         {
             return !string.IsNullOrWhiteSpace(NewItemName);
         }
+        private void DeleteItem(ChecklistItem? item)
+        {
+            if (item is null) return;
+            Items.Remove(item);
+        }
+        private bool CanDeleteItem(ChecklistItem? item) =>
+            item is not null;
     }
 }
