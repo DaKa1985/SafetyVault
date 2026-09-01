@@ -1,5 +1,6 @@
 ﻿using SafetyVault.Wpf.Common;
 using SafetyVault.Wpf.Models;
+using SafetyVault.Wpf.Services;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
@@ -10,9 +11,11 @@ namespace SafetyVault.Wpf.ViewModels
         private string _newItemName = string.Empty;
         private string _newItemQuantityText = "1";
         private int _newItemQuantity;
+        private readonly IDialogService _dialogService;
 
-        public ChecklistViewModel()
+        public ChecklistViewModel(IDialogService dialogService)
         {
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             Items.Add(new ChecklistItem { Name = "Taschenlampe", Description = "Beleuchtung, auch Stirnlampe denkbar", Quantity = 1, IsPacked = false });
             Items.Add(new ChecklistItem { Name = "Batterien", Description = "Für Taschenlampe, Radio, etc.", Quantity = 4, IsPacked = false });
             Items.Add(new ChecklistItem { Name = "Erste-Hilfe-Set", Description = "Verbandsmaterial, Desinfektionsmittel, Schmerzmittel", Quantity = 1, IsPacked = false });
@@ -61,7 +64,12 @@ namespace SafetyVault.Wpf.ViewModels
             !HasErrors;
         private void DeleteItem(ChecklistItem? item)
         {
+            //vorher eine Bestätigung einholen, ob der Benutzer das Item wirklich löschen möchte
             if (item is null) return;
+            if (!_dialogService.Confirm($"Möchten Sie die Position '{item.Name}' wirklich löschen?"))
+            {
+                return;
+            }
             Items.Remove(item);
         }
         private bool CanDeleteItem(ChecklistItem? item) =>
@@ -96,5 +104,6 @@ namespace SafetyVault.Wpf.ViewModels
             }
             SetErrors(nameof(NewItemQuantityText), errors);
         }
+        
     }
 }

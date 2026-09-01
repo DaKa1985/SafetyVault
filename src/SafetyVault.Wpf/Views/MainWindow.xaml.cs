@@ -1,6 +1,8 @@
-﻿using System.Windows;
+﻿using SafetyVault.Wpf.Services;
+using System.Windows;
+using SafetyVault.Wpf.ViewModels;
 
-namespace SafetyVault.Wpf;
+namespace SafetyVault.Wpf.Views;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml
@@ -10,6 +12,6 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        DataContext = new ViewModels.ChecklistViewModel();
+        DataContext = new ChecklistViewModel(new DialogService());
     }
 }

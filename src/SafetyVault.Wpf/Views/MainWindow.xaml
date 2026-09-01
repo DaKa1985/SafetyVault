@@ -1,4 +1,4 @@
-﻿<Window x:Class="SafetyVault.Wpf.MainWindow"
+﻿<Window x:Class="SafetyVault.Wpf.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -30,7 +30,7 @@
                         <TextBlock Margin="8,0,0,0" Text="{Binding Name}" />
                         <TextBlock Margin="8,0,0,0" Text="{Binding Quantity}" />
                         <TextBlock Margin="8,0,0,0" Text="{Binding PackedAt}" />
-                        <Button Content="Delete Item" Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
+                        <Button Content="x     Eintrag löschen" Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
@@ -43,7 +43,7 @@
             </Grid.ColumnDefinitions>
             <TextBox Text="{Binding NewItemName, UpdateSourceTrigger=PropertyChanged}" Grid.Column="0"/>
             <TextBox Text="{Binding NewItemQuantityText, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1"/>
-            <Button Content="Add Item" Command="{Binding AddItemCommand}" Grid.Column="2" />
+            <Button Content="+     Eintrag hinzufügen" Command="{Binding AddItemCommand}" Grid.Column="2" />
         </Grid>
     </Grid>
 </Window>
