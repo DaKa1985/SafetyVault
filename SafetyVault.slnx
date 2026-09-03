@@ -1,5 +1,7 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/SafetyVault.Api/SafetyVault.Api.csproj" />
+    <Project Path="src/SafetyVault.Shared/SafetyVault.Shared.csproj" />
     <Project Path="src/SafetyVault.Wpf/SafetyVault.Wpf.csproj" />
   </Folder>
 </Solution>
