@@ -14,7 +14,7 @@ POST {{host}}/api/checklists/1/items
 Content-Type: application/json
 
 {
-  "name": "powerbank",
+  "name": "Powerbank",
   "description": "20000 mAh",
   "quantity": 2
 }
