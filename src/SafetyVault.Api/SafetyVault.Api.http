@@ -1,6 +1,20 @@
-@SafetyVault.Api_HostAddress = http://localhost:5087
+@host = https://localhost:7247
 
-GET {{SafetyVault.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+### Alle Checklisten
+GET {{host}}/api/checklists
 
-###
+### Eine Checkliste
+GET {{host}}/api/checklists/1
+
+### Item in einer Checkliste
+GET {{host}}/api/checklists/1/items/1
+
+### Item anlegen
+POST {{host}}/api/checklists/1/items
+Content-Type: application/json
+
+{
+  "name": "powerbank",
+  "description": "20000 mAh",
+  "quantity": 2
+}

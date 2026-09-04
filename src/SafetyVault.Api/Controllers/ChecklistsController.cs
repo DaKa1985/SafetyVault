@@ -54,4 +54,37 @@ public class ChecklistsController : ControllerBase
         };
         return Ok(result);
     }
+
+    [HttpGet("/api/checklists/{checklistId}/items/{id}")]
+    public ActionResult<ChecklistItemDto> GetItemById(int checklistId, int id)
+    {
+        var item = ChecklistItems.FirstOrDefault(i => i.ChecklistId == checklistId && i.Id == id);
+        if (item == null)
+        {
+            return NotFound();
+        }
+        return Ok(item);
+    }
+
+    [HttpPost("/api/checklists/{checklistId}/items")]
+    public ActionResult<ChecklistItemDto> AddItem(int checklistId, CreateChecklistItemDto dto)
+    {
+        var checklist = Checklists.FirstOrDefault(c => c.Id == checklistId);
+        if (checklist == null)
+        {
+            return NotFound();
+        }
+        var newItem = new ChecklistItemDto
+        {
+            Id = ChecklistItems.Count == 0 ? 1 : ChecklistItems.Max(i => i.Id) + 1,
+            Name = dto.Name,
+            Description = dto.Description,
+            Quantity = dto.Quantity,
+            IsPacked = false,
+            PackedAt = null,
+            ChecklistId = checklistId
+        };
+        ChecklistItems.Add(newItem);
+        return CreatedAtAction(nameof(GetItemById), new { checklistId = checklistId, id = newItem.Id }, newItem);
+    }
 }
