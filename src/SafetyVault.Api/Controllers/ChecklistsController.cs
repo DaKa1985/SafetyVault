@@ -35,4 +35,23 @@ public class ChecklistsController : ControllerBase
             ItemCount = ChecklistItems.Count(item => item.ChecklistId == c.Id)
         }));
     }
+
+    [HttpGet("{id}")]
+    public ActionResult<ChecklistDto> GetById(int id)
+    {
+        var checklist = Checklists.FirstOrDefault(c => c.Id == id);
+        if (checklist == null)
+        {
+            return NotFound();
+        }
+
+        var result = new ChecklistDto
+        {
+            Id = checklist.Id,
+            Name = checklist.Name,
+            Description = checklist.Description,
+            Items = ChecklistItems.Where(item => item.ChecklistId == checklist.Id).ToList()
+        };
+        return Ok(result);
+    }
 }
