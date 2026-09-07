@@ -55,7 +55,7 @@ public class ChecklistsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("/api/checklists/{checklistId}/items/{id}")]
+    [HttpGet("{checklistId}/items/{id}")]
     public ActionResult<ChecklistItemDto> GetItemById(int checklistId, int id)
     {
         var item = ChecklistItems.FirstOrDefault(i => i.ChecklistId == checklistId && i.Id == id);
@@ -66,7 +66,7 @@ public class ChecklistsController : ControllerBase
         return Ok(item);
     }
 
-    [HttpPost("/api/checklists/{checklistId}/items")]
+    [HttpPost("{checklistId}/items")]
     public ActionResult<ChecklistItemDto> AddItem(int checklistId, CreateChecklistItemDto dto)
     {
         var checklist = Checklists.FirstOrDefault(c => c.Id == checklistId);
@@ -86,5 +86,42 @@ public class ChecklistsController : ControllerBase
         };
         ChecklistItems.Add(newItem);
         return CreatedAtAction(nameof(GetItemById), new { checklistId = checklistId, id = newItem.Id }, newItem);
+    }
+
+    [HttpPut("{checklistId}/items/{id}")]
+    public ActionResult UpdateItem(int checklistId, int id, UpdateChecklistItemDto dto)
+    {
+        var item = ChecklistItems.FirstOrDefault(i => i.ChecklistId == checklistId && i.Id == id);
+        if (item == null)
+        {
+            return NotFound();
+        }
+        item.Name = dto.Name;
+        item.Description = dto.Description;
+        item.Quantity = dto.Quantity;
+        bool wasPackedBefore = item.IsPacked;
+        item.IsPacked = dto.IsPacked;
+        if (!wasPackedBefore && dto.IsPacked)
+        {
+            item.PackedAt = DateTime.UtcNow;
+        }
+        else if (!dto.IsPacked)
+        {
+            item.PackedAt = null;
+        }
+        return NoContent();
+    }
+
+    [HttpDelete("{checklistId}/items/{id}")]
+
+    public ActionResult DeleteItem(int checklistId, int id)
+    {
+        var item = ChecklistItems.FirstOrDefault(i => i.ChecklistId == checklistId && i.Id == id);
+        if (item == null)
+        {
+            return NotFound();
+        }
+        ChecklistItems.Remove(item);
+        return NoContent();
     }
 }
