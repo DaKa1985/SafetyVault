@@ -4,7 +4,7 @@
 GET {{host}}/api/checklists
 
 ### Eine Checkliste
-GET {{host}}/api/checklists/2
+GET {{host}}/api/checklists/1
 
 ### Item in einer Checkliste
 GET {{host}}/api/checklists/1/items/4
@@ -32,4 +32,4 @@ Content-Type: application/json
 }
 
 ### Item löschen
-DELETE {{host}}/api/checklists/1/items/4
+DELETE {{host}}/api/checklists/1/items/6

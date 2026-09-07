@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SafetyVault.Api.Services;
 using SafetyVault.Shared.Models;
 
 namespace SafetyVault.Api.Controllers;
@@ -7,58 +8,36 @@ namespace SafetyVault.Api.Controllers;
 [Route("api/[controller]")]
 public class ChecklistsController : ControllerBase
 {
-    private static readonly List<ChecklistDto> Checklists = new List<ChecklistDto>
-    {
-        new ChecklistDto { Id = 1, Name = "Notfallrucksack", Description = "Alles für den Rucksack", Items = new List<ChecklistItemDto>() },
-        new ChecklistDto { Id = 2, Name = "Verpflegungskoffer", Description = "Verpflegungskoffer für 7 Tage", Items = new List<ChecklistItemDto>() },
-        new ChecklistDto { Id = 3, Name = "technisches Material", Description = "Technisches Material für den Notfall", Items = new List<ChecklistItemDto>() }
-    };
+    private readonly IChecklistService _checklistService;
 
-    private static readonly List<ChecklistItemDto> ChecklistItems = new List<ChecklistItemDto>
+    public ChecklistsController(IChecklistService checklistService)
     {
-        new ChecklistItemDto { Id = 1, Name = "Wasser", Description = "Wasser für 7 Tage",Quantity = 14, IsPacked = false, ChecklistId = 2 },
-        new ChecklistItemDto { Id = 2, Name = "Essen", Description = "Essen für 7 Tage", Quantity = 7,IsPacked = false, ChecklistId = 2 },
-        new ChecklistItemDto { Id = 3, Name = "Medikamente", Description = "Medikamente für 7 Tage",Quantity = 4, IsPacked = false, ChecklistId = 2 },
-        new ChecklistItemDto { Id = 4, Name = "Taschenlampe", Description = "Taschenlampe mit Batterien",Quantity = 2, IsPacked = false, ChecklistId = 1 },
-        new ChecklistItemDto { Id = 5, Name = "Batterien", Description = "Batterien für Taschenlampe",Quantity = 4, IsPacked = false, ChecklistId = 1 },
-        new ChecklistItemDto { Id = 6, Name = "Erste-Hilfe-Set", Description = "Erste-Hilfe-Set für Notfälle",Quantity = 1, IsPacked = false, ChecklistId = 1 }
-    };
+        _checklistService = checklistService
+            ?? throw new ArgumentNullException(nameof(checklistService));
+    }
 
     [HttpGet]
     public ActionResult<IEnumerable<ChecklistSummaryDto>> GetAll()
     {
-        return Ok(Checklists.Select(c => new ChecklistSummaryDto
-        {
-            Id = c.Id,
-            Name = c.Name,
-            Description = c.Description,
-            ItemCount = ChecklistItems.Count(item => item.ChecklistId == c.Id)
-        }));
+        var checklists = _checklistService.GetAll();
+        return Ok(checklists);
     }
 
     [HttpGet("{id}")]
     public ActionResult<ChecklistDto> GetById(int id)
     {
-        var checklist = Checklists.FirstOrDefault(c => c.Id == id);
+        var checklist = _checklistService.GetById(id);
         if (checklist == null)
         {
             return NotFound();
         }
-
-        var result = new ChecklistDto
-        {
-            Id = checklist.Id,
-            Name = checklist.Name,
-            Description = checklist.Description,
-            Items = ChecklistItems.Where(item => item.ChecklistId == checklist.Id).ToList()
-        };
-        return Ok(result);
+        return Ok(checklist);
     }
 
     [HttpGet("{checklistId}/items/{id}")]
     public ActionResult<ChecklistItemDto> GetItemById(int checklistId, int id)
     {
-        var item = ChecklistItems.FirstOrDefault(i => i.ChecklistId == checklistId && i.Id == id);
+        var item = _checklistService.GetItem(checklistId, id);
         if (item == null)
         {
             return NotFound();
@@ -69,59 +48,25 @@ public class ChecklistsController : ControllerBase
     [HttpPost("{checklistId}/items")]
     public ActionResult<ChecklistItemDto> AddItem(int checklistId, CreateChecklistItemDto dto)
     {
-        var checklist = Checklists.FirstOrDefault(c => c.Id == checklistId);
-        if (checklist == null)
-        {
+        var newItem = _checklistService.AddItem(checklistId, dto);
+        if (newItem == null)
             return NotFound();
-        }
-        var newItem = new ChecklistItemDto
-        {
-            Id = ChecklistItems.Count == 0 ? 1 : ChecklistItems.Max(i => i.Id) + 1,
-            Name = dto.Name,
-            Description = dto.Description,
-            Quantity = dto.Quantity,
-            IsPacked = false,
-            PackedAt = null,
-            ChecklistId = checklistId
-        };
-        ChecklistItems.Add(newItem);
-        return CreatedAtAction(nameof(GetItemById), new { checklistId = checklistId, id = newItem.Id }, newItem);
+        return CreatedAtAction(nameof(GetItemById), new { checklistId, id = newItem.Id }, newItem);
     }
 
     [HttpPut("{checklistId}/items/{id}")]
     public ActionResult UpdateItem(int checklistId, int id, UpdateChecklistItemDto dto)
     {
-        var item = ChecklistItems.FirstOrDefault(i => i.ChecklistId == checklistId && i.Id == id);
-        if (item == null)
-        {
-            return NotFound();
-        }
-        item.Name = dto.Name;
-        item.Description = dto.Description;
-        item.Quantity = dto.Quantity;
-        bool wasPackedBefore = item.IsPacked;
-        item.IsPacked = dto.IsPacked;
-        if (!wasPackedBefore && dto.IsPacked)
-        {
-            item.PackedAt = DateTime.UtcNow;
-        }
-        else if (!dto.IsPacked)
-        {
-            item.PackedAt = null;
-        }
-        return NoContent();
+        var success = _checklistService.UpdateItem(checklistId, id, dto);
+        return success ? NoContent() : NotFound();
     }
 
     [HttpDelete("{checklistId}/items/{id}")]
 
     public ActionResult DeleteItem(int checklistId, int id)
     {
-        var item = ChecklistItems.FirstOrDefault(i => i.ChecklistId == checklistId && i.Id == id);
-        if (item == null)
-        {
-            return NotFound();
-        }
-        ChecklistItems.Remove(item);
-        return NoContent();
+        var success = _checklistService.DeleteItem(checklistId, id);
+        return success ? NoContent() : NotFound();
     }
 }
+
