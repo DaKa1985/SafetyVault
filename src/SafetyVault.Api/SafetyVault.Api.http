@@ -17,7 +17,7 @@ Content-Type: application/json
   "name": "Taschenlampe",
   "description": "mit batterien",
   "quantity": 2,
-  "isPacked": true,
+  "isPacked": true
 }
 
 ### Item aktualisieren
@@ -25,11 +25,11 @@ PUT {{host}}/api/checklists/1/items/4
 Content-Type: application/json
 
 {
-  "name": "Taschenlampe",
+  "name": "Taschenlampe blau",
   "description": "Taschenlampe LED mit 1000 lumen",
   "quantity": 2,
   "isPacked": true
 }
 
 ### Item löschen
-DELETE {{host}}/api/checklists/1/items/6
+DELETE {{host}}/api/checklists/1/items/4
