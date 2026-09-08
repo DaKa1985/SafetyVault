@@ -3,6 +3,7 @@ namespace SafetyVault.Wpf.Services
 {
     public interface IChecklistApiClient
     {
-         Task<IEnumerable<ChecklistSummaryDto>> GetChecklistsAsync();
+        Task<IEnumerable<ChecklistSummaryDto>> GetChecklistsAsync();
+        Task<ChecklistDto?> GetChecklistByIdAsync(int id);
     }
 }

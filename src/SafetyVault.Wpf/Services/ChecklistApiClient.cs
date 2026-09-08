@@ -23,5 +23,9 @@ namespace SafetyVault.Wpf.Services
             return await _httpClient.GetFromJsonAsync<IEnumerable<ChecklistSummaryDto>>(ChecklistsPath) 
                 ?? Enumerable.Empty<ChecklistSummaryDto>();
         }
+        public async Task<ChecklistDto?> GetChecklistByIdAsync(int id)
+        {
+            return await _httpClient.GetFromJsonAsync<ChecklistDto>($"{ChecklistsPath}/{id}");
+        }
     }
 }

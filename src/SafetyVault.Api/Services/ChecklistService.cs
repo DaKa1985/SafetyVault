@@ -15,7 +15,7 @@ namespace SafetyVault.Api.Services
             new ChecklistItemDto { Id = 1, Name = "Wasser", Description = "Wasser für 7 Tage",Quantity = 14, IsPacked = false, ChecklistId = 2 },
             new ChecklistItemDto { Id = 2, Name = "Essen", Description = "Essen für 7 Tage", Quantity = 7,IsPacked = false, ChecklistId = 2 },
             new ChecklistItemDto { Id = 3, Name = "Medikamente", Description = "Medikamente für 7 Tage",Quantity = 4, IsPacked = false, ChecklistId = 2 },
-            new ChecklistItemDto { Id = 4, Name = "Taschenlampe", Description = "Taschenlampe mit Batterien",Quantity = 2, IsPacked = false, ChecklistId = 1 },
+            new ChecklistItemDto { Id = 4, Name = "Taschenlampe LED", Description = "Taschenlampe mit Batterien",Quantity = 2, IsPacked = false, ChecklistId = 1 },
             new ChecklistItemDto { Id = 5, Name = "Batterien", Description = "Batterien für Taschenlampe",Quantity = 4, IsPacked = false, ChecklistId = 1 },
             new ChecklistItemDto { Id = 6, Name = "Erste-Hilfe-Set", Description = "Erste-Hilfe-Set für Notfälle",Quantity = 1, IsPacked = false, ChecklistId = 1 }
         };

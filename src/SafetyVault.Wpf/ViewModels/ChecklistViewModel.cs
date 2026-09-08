@@ -2,6 +2,7 @@
 using SafetyVault.Wpf.Models;
 using SafetyVault.Wpf.Services;
 using System.Collections.ObjectModel;
+using System.Security.Cryptography.X509Certificates;
 using System.Windows.Input;
 
 namespace SafetyVault.Wpf.ViewModels
@@ -12,13 +13,12 @@ namespace SafetyVault.Wpf.ViewModels
         private string _newItemQuantityText = "1";
         private int _newItemQuantity;
         private readonly IDialogService _dialogService;
+        private readonly IChecklistApiClient _apiClient;
 
-        public ChecklistViewModel(IDialogService dialogService)
+        public ChecklistViewModel(IDialogService dialogService, IChecklistApiClient apiClient)
         {
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            Items.Add(new ChecklistItem { Name = "Taschenlampe", Description = "Beleuchtung, auch Stirnlampe denkbar", Quantity = 1, IsPacked = false });
-            Items.Add(new ChecklistItem { Name = "Batterien", Description = "Für Taschenlampe, Radio, etc.", Quantity = 4, IsPacked = false });
-            Items.Add(new ChecklistItem { Name = "Erste-Hilfe-Set", Description = "Verbandsmaterial, Desinfektionsmittel, Schmerzmittel", Quantity = 1, IsPacked = false });
+            _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
             AddItemCommand = new RelayCommand(AddItem, CanAddItem);
             DeleteItemCommand = new RelayCommand<ChecklistItem>(DeleteItem, CanDeleteItem);
             ValidateNewItemName();
@@ -104,6 +104,23 @@ namespace SafetyVault.Wpf.ViewModels
             }
             SetErrors(nameof(NewItemQuantityText), errors);
         }
-        
+
+        public async Task LoadAsync()
+        {
+            var checklist = await _apiClient.GetChecklistByIdAsync(1); // Feste Id bis zur Checklisten-Auswahl in Woche 2
+            if (checklist is null) return;
+
+            Items.Clear();
+            foreach (var item in checklist.Items)
+            {
+                Items.Add(new ChecklistItem
+                {
+                    Name = item.Name,
+                    Description = item.Description,
+                    Quantity = item.Quantity,
+                    IsPacked = item.IsPacked,
+                });
+            }
+        }
     }
 }
