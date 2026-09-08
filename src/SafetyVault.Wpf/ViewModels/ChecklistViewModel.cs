@@ -2,7 +2,8 @@
 using SafetyVault.Wpf.Models;
 using SafetyVault.Wpf.Services;
 using System.Collections.ObjectModel;
-using System.Security.Cryptography.X509Certificates;
+using System.Net.Http;
+using System.Text.Json;
 using System.Windows.Input;
 
 namespace SafetyVault.Wpf.ViewModels
@@ -107,19 +108,30 @@ namespace SafetyVault.Wpf.ViewModels
 
         public async Task LoadAsync()
         {
-            var checklist = await _apiClient.GetChecklistByIdAsync(1); // Feste Id bis zur Checklisten-Auswahl in Woche 2
-            if (checklist is null) return;
-
-            Items.Clear();
-            foreach (var item in checklist.Items)
+            try
             {
-                Items.Add(new ChecklistItem
+                var checklist = await _apiClient.GetChecklistByIdAsync(1); // Feste Id bis zur Checklisten-Auswahl in Woche 2
+                if (checklist is null) return;
+
+                Items.Clear();
+                foreach (var item in checklist.Items)
                 {
-                    Name = item.Name,
-                    Description = item.Description,
-                    Quantity = item.Quantity,
-                    IsPacked = item.IsPacked,
-                });
+                    Items.Add(new ChecklistItem
+                    {
+                        Name = item.Name,
+                        Description = item.Description,
+                        Quantity = item.Quantity,
+                        IsPacked = item.IsPacked,
+                    });
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                _dialogService.ShowError($"Die Anwendung konnte den Server nicht erreichen. Prüfen Sie, ob die API läuft. - {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                _dialogService.ShowError($"Die Antwort des Servers war nicht lesbar.- {ex.Message}");
             }
         }
     }
