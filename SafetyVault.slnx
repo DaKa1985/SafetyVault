@@ -1,5 +1,8 @@
 <Solution>
   <Folder Name="/src/">
+    <File Path=".env" />
+    <File Path=".env.example" />
+    <File Path="docker-compose.yml" />
     <Project Path="src/SafetyVault.Api/SafetyVault.Api.csproj" />
     <Project Path="src/SafetyVault.Shared/SafetyVault.Shared.csproj" />
     <Project Path="src/SafetyVault.Wpf/SafetyVault.Wpf.csproj" />
