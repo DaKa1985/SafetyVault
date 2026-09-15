@@ -21,6 +21,20 @@ namespace SafetyVault.Api.Data
                 .WithMany(i => i.ChecklistItems)
                 .HasForeignKey(ci => ci.ItemId)
                 .OnDelete(DeleteBehavior.Restrict);
+            //Checklist- und Item-Name auf 100 Zeichen begrenzen
+            modelBuilder.Entity<Checklist>()
+                .Property(c => c.Name)
+                .HasMaxLength(100);
+            modelBuilder.Entity<Item>()
+                .Property(i => i.Name)
+                .HasMaxLength(100);
+            //Description auf 500 Zeichen begrenzen
+            modelBuilder.Entity<Checklist>()
+                .Property(c => c.Description)
+                .HasMaxLength(500);
+            modelBuilder.Entity<Item>()
+                .Property(i => i.Description)
+                .HasMaxLength(500);
         }
     }
 }
