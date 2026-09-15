@@ -4,7 +4,7 @@ namespace SafetyVault.Api.Services
 {
     public interface IChecklistService
     {
-        IEnumerable<ChecklistSummaryDto> GetAll();
+        Task<IEnumerable<ChecklistSummaryDto>> GetAllAsync();
         ChecklistDto? GetById(int id);
         ChecklistItemDto? GetItem(int checklistId, int itemId);
         ChecklistItemDto? AddItem(int checklistId, CreateChecklistItemDto dto);

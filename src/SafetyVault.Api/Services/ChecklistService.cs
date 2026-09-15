@@ -1,9 +1,20 @@
-﻿using SafetyVault.Shared.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using SafetyVault.Api.Data;
+using SafetyVault.Shared.Models;
 
 namespace SafetyVault.Api.Services
 {
     public class ChecklistService : IChecklistService
     {
+
+        //AppDbContext über Konstruktor-Injection übergeben, um auf die Datenbank zuzugreifen
+        private readonly AppDbContext _context;
+
+        public ChecklistService(AppDbContext context)
+        {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+        }
+
         private static readonly List<ChecklistDto> Checklists = new List<ChecklistDto>
         {
             new ChecklistDto { Id = 1, Name = "Notfallrucksack", Description = "Alles für den Rucksack", Items = new List<ChecklistItemDto>() },
@@ -38,15 +49,17 @@ namespace SafetyVault.Api.Services
             ChecklistItems.Add(newItem);
             return newItem;
         }
-        public IEnumerable<ChecklistSummaryDto> GetAll()
+        public async Task<IEnumerable<ChecklistSummaryDto>> GetAllAsync()
         {
-            var checklistSummaries = Checklists.Select(c => new ChecklistSummaryDto
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Description = c.Description,
-                ItemCount = ChecklistItems.Count(i => i.ChecklistId == c.Id)
-            }).ToList();
+            var checklistSummaries = await _context.Checklists
+                .Select(c => new ChecklistSummaryDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Description = c.Description,
+                    ItemCount = c.ChecklistItems.Count()
+                })
+                .ToListAsync();
             return checklistSummaries;
         }
         public ChecklistDto? GetById(int id)

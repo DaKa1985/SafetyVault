@@ -17,9 +17,9 @@ public class ChecklistsController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<ChecklistSummaryDto>> GetAll()
+    public async Task<ActionResult<IEnumerable<ChecklistSummaryDto>>> GetAll()
     {
-        var checklists = _checklistService.GetAll();
+        var checklists = await _checklistService.GetAllAsync();
         return Ok(checklists);
     }
 
