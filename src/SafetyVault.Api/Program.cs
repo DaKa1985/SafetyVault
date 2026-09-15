@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 using SafetyVault.Api.Data;
+using SafetyVault.Api.Entities;
 using SafetyVault.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +14,16 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddScoped<IChecklistService, ChecklistService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString)
+    .UseSeeding((context, _) =>
+    {
+        var checklists = context.Set<Checklist>();
+        if (!checklists.Any())
+        {
+            checklists.AddRange(SeedData.CreateChecklists());
+            context.SaveChanges();       
+    }
+    }));
 
 var app = builder.Build();
 
