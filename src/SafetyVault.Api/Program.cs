@@ -21,9 +21,21 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         if (!checklists.Any())
         {
             checklists.AddRange(SeedData.CreateChecklists());
-            context.SaveChanges();       
+            context.SaveChanges();
+        }
+    })
+    .UseAsyncSeeding(async (context, _, cancellationToken) =>
+    {
+        var checklists = context.Set<Checklist>();
+        if (!await checklists.AnyAsync(cancellationToken))
+        {
+            checklists.AddRange(SeedData.CreateChecklists());
+            await context.SaveChangesAsync(cancellationToken);
+        }
     }
-    }));
+    )
+    );
+
 
 var app = builder.Build();
 
