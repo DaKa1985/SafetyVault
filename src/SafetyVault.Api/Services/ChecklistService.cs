@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SafetyVault.Api.Data;
+using SafetyVault.Api.Entities;
 using SafetyVault.Shared.Models;
 
 namespace SafetyVault.Api.Services
@@ -14,40 +15,38 @@ namespace SafetyVault.Api.Services
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
-
-        private static readonly List<ChecklistDto> Checklists = new List<ChecklistDto>
+        public async Task<AddChecklistItemResult> AddItemAsync(int checklistId, CreateChecklistItemDto dto)
         {
-            new ChecklistDto { Id = 1, Name = "Notfallrucksack", Description = "Alles für den Rucksack", Items = new List<ChecklistItemDto>() },
-            new ChecklistDto { Id = 2, Name = "Verpflegungskoffer", Description = "Verpflegungskoffer für 7 Tage", Items = new List<ChecklistItemDto>() },
-            new ChecklistDto { Id = 3, Name = "technisches Material", Description = "Technisches Material für den Notfall", Items = new List<ChecklistItemDto>() }
-        };
-        private static readonly List<ChecklistItemDto> ChecklistItems = new List<ChecklistItemDto>
-        {
-            new ChecklistItemDto { Id = 1, Name = "Wasser", Description = "Wasser für 7 Tage",Quantity = 14, IsPacked = false, ChecklistId = 2 },
-            new ChecklistItemDto { Id = 2, Name = "Essen", Description = "Essen für 7 Tage", Quantity = 7,IsPacked = false, ChecklistId = 2 },
-            new ChecklistItemDto { Id = 3, Name = "Medikamente", Description = "Medikamente für 7 Tage",Quantity = 4, IsPacked = false, ChecklistId = 2 },
-            new ChecklistItemDto { Id = 4, Name = "Taschenlampe LED", Description = "Taschenlampe mit Batterien",Quantity = 2, IsPacked = false, ChecklistId = 1 },
-            new ChecklistItemDto { Id = 5, Name = "Batterien", Description = "Batterien für Taschenlampe",Quantity = 4, IsPacked = false, ChecklistId = 1 },
-            new ChecklistItemDto { Id = 6, Name = "Erste-Hilfe-Set", Description = "Erste-Hilfe-Set für Notfälle",Quantity = 1, IsPacked = false, ChecklistId = 1 }
-        };
-        public ChecklistItemDto? AddItem(int checklistId, CreateChecklistItemDto dto)
-        {
-            var checklist = Checklists.FirstOrDefault(c => c.Id == checklistId);
-            if (checklist == null)
+            var checklistExists = await _context.Checklists.AnyAsync(c => c.Id == checklistId);
+            if (!checklistExists)
             {
-                return null;
+                return new AddChecklistItemResult(AddChecklistItemStatus.ChecklistNotFound, null);
             }
-            var newItem = new ChecklistItemDto
+            var item = await _context.Items.FindAsync(dto.ItemId);
+            if (item is null)
             {
-                Id = ChecklistItems.Count == 0 ? 1 : ChecklistItems.Max(i => i.Id) + 1,
-                Name = dto.Name,
-                Description = dto.Description,
-                Quantity = dto.Quantity,
-                IsPacked = false,
-                ChecklistId = checklistId
+                return new AddChecklistItemResult(AddChecklistItemStatus.ItemNotFound, null);
+            }
+            var entity = new ChecklistItem
+            {
+                ChecklistId = checklistId,
+                ItemId = dto.ItemId,
+                TargetQuantity = dto.TargetQuantity,
+                ActualQuantity = 0,
+                PackedAt = null
             };
-            ChecklistItems.Add(newItem);
-            return newItem;
+            _context.ChecklistItems.Add(entity);
+            await _context.SaveChangesAsync();
+            return new AddChecklistItemResult(AddChecklistItemStatus.Success, new ChecklistItemDto
+            {
+                Id = entity.Id,
+                Name = item.Name,
+                Description = item.Description,
+                ChecklistId = entity.ChecklistId,
+                TargetQuantity = entity.TargetQuantity,
+                ActualQuantity = entity.ActualQuantity,
+                PackedAt = entity.PackedAt
+            });
         }
         public async Task<IEnumerable<ChecklistSummaryDto>> GetAllAsync()
         {
@@ -62,59 +61,85 @@ namespace SafetyVault.Api.Services
                 .ToListAsync();
             return checklistSummaries;
         }
-        public ChecklistDto? GetById(int id)
+        public async Task<ChecklistDto?> GetByIdAsync(int id)
         {
-            var checklist = Checklists.FirstOrDefault(c => c.Id == id);
-            if (checklist == null)
-            {
-                return null;
-            }
-            return new ChecklistDto
-            {
-                Id = checklist.Id,
-                Name = checklist.Name,
-                Description = checklist.Description,
-                Items = ChecklistItems.Where(i => i.ChecklistId == id).ToList()
-            };
+            var checklist = await _context.Checklists
+                .Where(c => c.Id == id)
+                .Select(c => new ChecklistDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Description = c.Description,
+                    Items = c.ChecklistItems.Select(ci => new ChecklistItemDto
+                    {
+                        Id = ci.Id,
+                        Name = ci.Item.Name,
+                        Description = ci.Item.Description,
+                        ChecklistId = ci.ChecklistId,
+                        TargetQuantity = ci.TargetQuantity,
+                        ActualQuantity = ci.ActualQuantity,
+                        PackedAt = ci.PackedAt
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+            return checklist;
         }
-        public ChecklistItemDto? GetItem(int checklistId, int itemId)
+            
+        public async Task<ChecklistItemDto?> GetItemAsync(int checklistId, int checklistItemId)
         {
-            var item = ChecklistItems.FirstOrDefault(i => i.ChecklistId == checklistId && i.Id == itemId);
+            var item = await _context.ChecklistItems
+                .Where(ci => ci.ChecklistId == checklistId && ci.Id == checklistItemId)
+                .Select(ci => new ChecklistItemDto
+                {
+                    Id = ci.Id,
+                    Name = ci.Item.Name,
+                    Description = ci.Item.Description,
+                    ChecklistId = ci.ChecklistId,
+                    TargetQuantity = ci.TargetQuantity,
+                    ActualQuantity = ci.ActualQuantity,
+                    PackedAt = ci.PackedAt
+                })
+                .FirstOrDefaultAsync();
             return item;
         }
-        public bool UpdateItem(int checklistId, int itemId, UpdateChecklistItemDto dto)
+        public async Task<bool> UpdateItemAsync(int checklistId, int checklistItemId, UpdateChecklistItemDto dto)
         {
-            var item = ChecklistItems.FirstOrDefault(i => i.ChecklistId == checklistId && i.Id == itemId);
-            if (item == null)
+            var entry = await _context.ChecklistItems
+                .Where(ci => ci.ChecklistId == checklistId && ci.Id == checklistItemId)
+                .FirstOrDefaultAsync();
+            if (entry is null)
             {
                 return false;
             }
-            item.Name = dto.Name;
-            item.Description = dto.Description;
-            item.Quantity = dto.Quantity;
+            entry.TargetQuantity = dto.TargetQuantity;
+            entry.ActualQuantity = dto.ActualQuantity;
 
-            bool wasPackedBefore = item.IsPacked;
-            item.IsPacked = dto.IsPacked;
+            var isPacked = entry.ActualQuantity >= entry.TargetQuantity;
 
-            if (!wasPackedBefore && dto.IsPacked)
+            if (isPacked && entry.PackedAt is null)
             {
-                item.PackedAt = DateTime.UtcNow;
+                entry.PackedAt = DateTime.UtcNow;
             }
-            else if (!dto.IsPacked)
+            else if (!isPacked)
             {
-                item.PackedAt = null;
+                entry.PackedAt = null;
             }
+
+            await _context.SaveChangesAsync();
             return true;
         }
 
-        public bool DeleteItem(int checklistId, int itemId)
+        public async Task<bool> DeleteItemAsync(int checklistId, int checklistItemId)
         {
-            var item = ChecklistItems.FirstOrDefault(i => i.ChecklistId == checklistId && i.Id == itemId);
-            if (item == null)
+            var entry = await _context.ChecklistItems
+                .Where(ci => ci.ChecklistId == checklistId && ci.Id == checklistItemId)
+                .FirstOrDefaultAsync();
+            if (entry is null)
             {
                 return false;
             }
-            ChecklistItems.Remove(item);
+            _context.ChecklistItems.Remove(entry);
+            await _context.SaveChangesAsync();
             return true;
         }
     }

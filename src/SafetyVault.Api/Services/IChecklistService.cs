@@ -5,10 +5,10 @@ namespace SafetyVault.Api.Services
     public interface IChecklistService
     {
         Task<IEnumerable<ChecklistSummaryDto>> GetAllAsync();
-        ChecklistDto? GetById(int id);
-        ChecklistItemDto? GetItem(int checklistId, int itemId);
-        ChecklistItemDto? AddItem(int checklistId, CreateChecklistItemDto dto);
-        bool UpdateItem(int checklistId, int itemId, UpdateChecklistItemDto dto);
-        bool DeleteItem(int checklistId, int itemId);
+        Task<ChecklistDto?> GetByIdAsync(int id);
+        Task<ChecklistItemDto?> GetItemAsync(int checklistId, int checklistItemId);
+        Task<AddChecklistItemResult> AddItemAsync(int checklistId, CreateChecklistItemDto dto);
+        Task<bool> UpdateItemAsync(int checklistId, int checklistItemId, UpdateChecklistItemDto dto);
+        Task<bool> DeleteItemAsync(int checklistId, int checklistItemId);
     }
 }

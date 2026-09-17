@@ -120,7 +120,7 @@ namespace SafetyVault.Wpf.ViewModels
                     {
                         Name = item.Name,
                         Description = item.Description,
-                        Quantity = item.Quantity,
+                        Quantity = item.TargetQuantity,
                         IsPacked = item.IsPacked,
                     });
                 }

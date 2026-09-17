@@ -2,71 +2,79 @@
 using SafetyVault.Api.Services;
 using SafetyVault.Shared.Models;
 
-namespace SafetyVault.Api.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class ChecklistsController : ControllerBase
+namespace SafetyVault.Api.Controllers
 {
-    private readonly IChecklistService _checklistService;
 
-    public ChecklistsController(IChecklistService checklistService)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ChecklistsController : ControllerBase
     {
-        _checklistService = checklistService
-            ?? throw new ArgumentNullException(nameof(checklistService));
-    }
+        private readonly IChecklistService _checklistService;
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<ChecklistSummaryDto>>> GetAll()
-    {
-        var checklists = await _checklistService.GetAllAsync();
-        return Ok(checklists);
-    }
-
-    [HttpGet("{id}")]
-    public ActionResult<ChecklistDto> GetById(int id)
-    {
-        var checklist = _checklistService.GetById(id);
-        if (checklist == null)
+        public ChecklistsController(IChecklistService checklistService)
         {
-            return NotFound();
+            _checklistService = checklistService
+                ?? throw new ArgumentNullException(nameof(checklistService));
         }
-        return Ok(checklist);
-    }
 
-    [HttpGet("{checklistId}/items/{id}")]
-    public ActionResult<ChecklistItemDto> GetItemById(int checklistId, int id)
-    {
-        var item = _checklistService.GetItem(checklistId, id);
-        if (item == null)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ChecklistSummaryDto>>> GetAll()
         {
-            return NotFound();
+            var checklists = await _checklistService.GetAllAsync();
+            return Ok(checklists);
         }
-        return Ok(item);
-    }
 
-    [HttpPost("{checklistId}/items")]
-    public ActionResult<ChecklistItemDto> AddItem(int checklistId, CreateChecklistItemDto dto)
-    {
-        var newItem = _checklistService.AddItem(checklistId, dto);
-        if (newItem == null)
-            return NotFound();
-        return CreatedAtAction(nameof(GetItemById), new { checklistId, id = newItem.Id }, newItem);
-    }
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ChecklistDto>> GetById(int id)
+        {
+            var checklist = await _checklistService.GetByIdAsync(id);
+            if (checklist is null)
+            {
+                return NotFound();
+            }
+            return Ok(checklist);
+        }
 
-    [HttpPut("{checklistId}/items/{id}")]
-    public ActionResult UpdateItem(int checklistId, int id, UpdateChecklistItemDto dto)
-    {
-        var success = _checklistService.UpdateItem(checklistId, id, dto);
-        return success ? NoContent() : NotFound();
-    }
+        [HttpGet("{checklistId}/items/{id}")]
+        public async Task<ActionResult<ChecklistItemDto>> GetItemById(int checklistId, int id)
+        {
+            var item = await _checklistService.GetItemAsync(checklistId, id);
+            if (item is null)
+            {
+                return NotFound();
+            }
+            return Ok(item);
+        }
 
-    [HttpDelete("{checklistId}/items/{id}")]
+        [HttpPost("{checklistId}/items")]
+        public async Task<ActionResult<ChecklistItemDto>> AddItem(int checklistId, CreateChecklistItemDto dto)
+        {
+            var result = await _checklistService.AddItemAsync(checklistId, dto);
+            switch (result.Status)
+            {
+                case AddChecklistItemStatus.Success:
+                    return CreatedAtAction(nameof(GetItemById), new { checklistId, id = result.Item!.Id }, result.Item);
+                case AddChecklistItemStatus.ChecklistNotFound:
+                    return NotFound("Checklist not found");
+                case AddChecklistItemStatus.ItemNotFound:
+                    return BadRequest("Item not found");
+                default:
+                    throw new InvalidOperationException($"Unexpected status: {result.Status}");
+            }
+        }
 
-    public ActionResult DeleteItem(int checklistId, int id)
-    {
-        var success = _checklistService.DeleteItem(checklistId, id);
-        return success ? NoContent() : NotFound();
+        [HttpPut("{checklistId}/items/{id}")]
+        public async Task<ActionResult> UpdateItem(int checklistId, int id, UpdateChecklistItemDto dto)
+        {
+            var success = await _checklistService.UpdateItemAsync(checklistId, id, dto);
+            return success ? NoContent() : NotFound();
+        }
+
+        [HttpDelete("{checklistId}/items/{id}")]
+        public async Task<ActionResult> DeleteItem(int checklistId, int id)
+        {
+            var success = await _checklistService.DeleteItemAsync(checklistId, id);
+            return success ? NoContent() : NotFound();
+        }
     }
 }
-
