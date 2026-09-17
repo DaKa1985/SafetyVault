@@ -7,29 +7,25 @@ GET {{host}}/api/checklists
 GET {{host}}/api/checklists/1
 
 ### Item in einer Checkliste
-GET {{host}}/api/checklists/1/items/4
+GET {{host}}/api/checklists/3/items/1002
 
 ### Item anlegen
-POST {{host}}/api/checklists/1/items
+POST {{host}}/api/checklists/3/items
 Content-Type: application/json
 
 {
-  "name": "Taschenlampe",
-  "description": "mit batterien",
-  "quantity": 2,
-  "isPacked": true
+  "itemId": 99,
+  "targetQuantity": 2
 }
 
 ### Item aktualisieren
-PUT {{host}}/api/checklists/1/items/4
+PUT {{host}}/api/checklists/3/items/1002
 Content-Type: application/json
 
 {
-  "name": "Taschenlampe blau",
-  "description": "Taschenlampe LED mit 1000 lumen",
-  "quantity": 2,
-  "isPacked": true
+  "targetQuantity": 2,
+  "actualQuantity": 1
 }
 
 ### Item löschen
-DELETE {{host}}/api/checklists/1/items/4
+DELETE {{host}}/api/checklists/3/items/1002
