@@ -95,6 +95,9 @@ namespace SafetyVault.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name")
+                        .IsUnique();
+
                     b.ToTable("Items");
                 });
 

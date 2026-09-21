@@ -28,6 +28,10 @@ namespace SafetyVault.Api.Data
             modelBuilder.Entity<Item>()
                 .Property(i => i.Name)
                 .HasMaxLength(100);
+            //Artikelname eindeutig?
+            modelBuilder.Entity<Item>()
+                .HasIndex(i => i.Name)
+                .IsUnique();
             //Description auf 500 Zeichen begrenzen
             modelBuilder.Entity<Checklist>()
                 .Property(c => c.Description)
