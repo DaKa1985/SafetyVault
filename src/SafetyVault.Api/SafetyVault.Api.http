@@ -29,3 +29,18 @@ Content-Type: application/json
 
 ### Item löschen
 DELETE {{host}}/api/checklists/3/items/1002
+
+### Alle items
+GET {{host}}/api/items
+
+### Ein item
+GET {{host}}/api/items/1002
+
+### Item anlegen
+POST {{host}}/api/items/
+Content-Type: application/json
+
+{
+  "name": "multitool",
+  "description": "Allzweckwerkzeug"
+}
