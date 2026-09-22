@@ -61,7 +61,10 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBox Text="{Binding NewItemName, UpdateSourceTrigger=PropertyChanged}" Grid.Column="0"/>
+            <ComboBox Grid.Column="0"
+                      ItemsSource="{Binding AvailableItems}"
+                      DisplayMemberPath="Name"
+                      SelectedItem="{Binding SelectedCatalogItem}"/>
             <TextBox Text="{Binding NewItemQuantityText, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1"/>
             <Button Content="+     Eintrag hinzufügen" Command="{Binding AddItemCommand}" Grid.Column="2" />
         </Grid>

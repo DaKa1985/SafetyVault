@@ -17,6 +17,7 @@ namespace SafetyVault.Wpf.ViewModels
         private readonly IDialogService _dialogService;
         private readonly IChecklistApiClient _apiClient;
         private readonly IItemApiClient _itemApiClient;
+        private ItemDto? _selectedCatalogItem;
 
         public ChecklistViewModel(IDialogService dialogService, IChecklistApiClient apiClient, IItemApiClient itemApiClient)
         {
@@ -55,6 +56,16 @@ namespace SafetyVault.Wpf.ViewModels
 
         public ObservableCollection<ChecklistItem> Items { get; } = new();
         public ObservableCollection<ItemDto> AvailableItems { get; } = new();
+        public ItemDto? SelectedCatalogItem
+        {
+            get => _selectedCatalogItem;
+            set
+            {
+                if (_selectedCatalogItem == value) return;
+                _selectedCatalogItem = value;
+                OnPropertyChanged();
+            }
+        }
         public ICommand AddItemCommand { get; }
         public ICommand DeleteItemCommand { get; }
 
