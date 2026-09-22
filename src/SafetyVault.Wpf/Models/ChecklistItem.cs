@@ -10,6 +10,8 @@ namespace SafetyVault.Wpf.Models
         private int _actualQuantity;
         private DateTime? _packedAt;
         public int Id { get; set; }
+        public int ChecklistId { get; set; }
+        public int ItemId { get; set; }
         public string Name
         {
             get => _name;
@@ -64,7 +66,7 @@ namespace SafetyVault.Wpf.Models
                 OnPropertyChanged();
             }
         }
-        public int ChecklistId { get; set; }
+
 
         public bool IsPacked => ActualQuantity >= TargetQuantity;
     }

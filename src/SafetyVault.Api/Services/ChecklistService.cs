@@ -45,7 +45,8 @@ namespace SafetyVault.Api.Services
                 ChecklistId = entity.ChecklistId,
                 TargetQuantity = entity.TargetQuantity,
                 ActualQuantity = entity.ActualQuantity,
-                PackedAt = entity.PackedAt
+                PackedAt = entity.PackedAt,
+                ItemId = entity.ItemId
             });
         }
         public async Task<IEnumerable<ChecklistSummaryDto>> GetAllAsync()
@@ -78,7 +79,8 @@ namespace SafetyVault.Api.Services
                         ChecklistId = ci.ChecklistId,
                         TargetQuantity = ci.TargetQuantity,
                         ActualQuantity = ci.ActualQuantity,
-                        PackedAt = ci.PackedAt
+                        PackedAt = ci.PackedAt,
+                        ItemId = ci.ItemId
                     }).ToList()
                 })
                 .FirstOrDefaultAsync();
@@ -97,7 +99,8 @@ namespace SafetyVault.Api.Services
                     ChecklistId = ci.ChecklistId,
                     TargetQuantity = ci.TargetQuantity,
                     ActualQuantity = ci.ActualQuantity,
-                    PackedAt = ci.PackedAt
+                    PackedAt = ci.PackedAt,
+                    ItemId = ci.ItemId
                 })
                 .FirstOrDefaultAsync();
             return item;

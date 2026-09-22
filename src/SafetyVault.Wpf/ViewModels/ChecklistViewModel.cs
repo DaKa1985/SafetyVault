@@ -122,7 +122,10 @@ namespace SafetyVault.Wpf.ViewModels
                         Description = item.Description,
                         TargetQuantity = item.TargetQuantity,
                         ActualQuantity = item.ActualQuantity,
-                        PackedAt = item.PackedAt?.LocalDateTime
+                        PackedAt = item.PackedAt?.LocalDateTime,
+                        Id = item.Id,
+                        ChecklistId = item.ChecklistId,
+                        ItemId = item.ItemId
                     });
                 }
             }

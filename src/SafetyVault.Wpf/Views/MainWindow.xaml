@@ -26,6 +26,8 @@
                   ItemsSource="{Binding Items}">
             <ListView.View>
                 <GridView>
+                    <GridViewColumn Header="Nr."
+                                    DisplayMemberBinding="{Binding Id}" />
                     <GridViewColumn Header="Name"
                                     DisplayMemberBinding="{Binding Name}" />
                     <GridViewColumn Header="Gepackt">

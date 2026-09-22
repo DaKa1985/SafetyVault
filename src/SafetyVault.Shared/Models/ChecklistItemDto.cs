@@ -10,5 +10,6 @@
         public DateTimeOffset? PackedAt { get; set; }
         public bool IsPacked => ActualQuantity >= TargetQuantity; 
         public int ChecklistId { get; set; }
+        public int ItemId { get; set; }
     }
 }
