@@ -1,4 +1,5 @@
-﻿using SafetyVault.Wpf.Common;
+﻿using SafetyVault.Shared.Models;
+using SafetyVault.Wpf.Common;
 using SafetyVault.Wpf.Models;
 using SafetyVault.Wpf.Services;
 using System.Collections.ObjectModel;
@@ -15,11 +16,13 @@ namespace SafetyVault.Wpf.ViewModels
         private int _newItemQuantity;
         private readonly IDialogService _dialogService;
         private readonly IChecklistApiClient _apiClient;
+        private readonly IItemApiClient _itemApiClient;
 
-        public ChecklistViewModel(IDialogService dialogService, IChecklistApiClient apiClient)
+        public ChecklistViewModel(IDialogService dialogService, IChecklistApiClient apiClient, IItemApiClient itemApiClient)
         {
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+            _itemApiClient = itemApiClient ?? throw new ArgumentNullException(nameof(itemApiClient));
             AddItemCommand = new RelayCommand(AddItem, CanAddItem);
             DeleteItemCommand = new RelayCommand<ChecklistItem>(DeleteItem, CanDeleteItem);
             ValidateNewItemName();
@@ -51,6 +54,7 @@ namespace SafetyVault.Wpf.ViewModels
         }
 
         public ObservableCollection<ChecklistItem> Items { get; } = new();
+        public ObservableCollection<ItemDto> AvailableItems { get; } = new();
         public ICommand AddItemCommand { get; }
         public ICommand DeleteItemCommand { get; }
 
@@ -112,7 +116,6 @@ namespace SafetyVault.Wpf.ViewModels
             {
                 var checklist = await _apiClient.GetChecklistByIdAsync(1); // Feste Id bis zur Checklisten-Auswahl in Woche 2
                 if (checklist is null) return;
-
                 Items.Clear();
                 foreach (var item in checklist.Items)
                 {
@@ -127,6 +130,12 @@ namespace SafetyVault.Wpf.ViewModels
                         ChecklistId = item.ChecklistId,
                         ItemId = item.ItemId
                     });
+                }
+                var catalog = await _itemApiClient.GetItemsAsync();
+                AvailableItems.Clear();
+                foreach (var item in catalog)
+                {
+                    AvailableItems.Add(item);
                 }
             }
             catch (HttpRequestException ex)

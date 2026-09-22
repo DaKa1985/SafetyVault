@@ -16,7 +16,8 @@ public partial class MainWindow : Window
         InitializeComponent();
         var httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7247/") };
         var apiClient = new ChecklistApiClient(httpClient);
-        _viewModel = new ChecklistViewModel(new DialogService(), apiClient);
+        var itemApiClient = new ItemApiClient(httpClient);
+        _viewModel = new ChecklistViewModel(new DialogService(), apiClient, itemApiClient);
         DataContext = _viewModel;
         Loaded += MainWindow_Loaded;
     }

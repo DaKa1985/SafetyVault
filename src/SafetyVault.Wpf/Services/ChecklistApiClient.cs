@@ -12,7 +12,7 @@ namespace SafetyVault.Wpf.Services
         {
             _httpClient = httpClient 
                 ?? throw new ArgumentNullException(nameof(httpClient));
-            if (_httpClient.BaseAddress == null)
+            if (_httpClient.BaseAddress is null)
             {
                 throw new InvalidOperationException("HttpClient BaseAddress is not set.");
             }
