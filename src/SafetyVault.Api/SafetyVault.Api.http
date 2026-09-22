@@ -7,7 +7,7 @@ GET {{host}}/api/checklists
 GET {{host}}/api/checklists/1
 
 ### Item in einer Checkliste
-GET {{host}}/api/checklists/3/items/1002
+GET {{host}}/api/checklists/1/items/1
 
 ### Item anlegen
 POST {{host}}/api/checklists/3/items
@@ -19,12 +19,12 @@ Content-Type: application/json
 }
 
 ### Item aktualisieren
-PUT {{host}}/api/checklists/3/items/1002
+PUT {{host}}/api/checklists/1/items/1
 Content-Type: application/json
 
 {
   "targetQuantity": 2,
-  "actualQuantity": 1
+  "actualQuantity": 2
 }
 
 ### Item löschen

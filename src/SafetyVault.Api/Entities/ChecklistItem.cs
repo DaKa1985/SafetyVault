@@ -12,6 +12,6 @@
 
         public int TargetQuantity { get; set; }
         public int ActualQuantity { get; set; }
-        public DateTime? PackedAt { get; set; }
+        public DateTimeOffset? PackedAt { get; set; }
     }
 }

@@ -118,7 +118,7 @@ namespace SafetyVault.Api.Services
 
             if (isPacked && entry.PackedAt is null)
             {
-                entry.PackedAt = DateTime.UtcNow;
+                entry.PackedAt = DateTimeOffset.UtcNow;
             }
             else if (!isPacked)
             {

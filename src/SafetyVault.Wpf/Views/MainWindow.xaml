@@ -40,7 +40,7 @@
                     <GridViewColumn Header="Soll-Menge"
                                     DisplayMemberBinding="{Binding TargetQuantity}" />
                     <GridViewColumn Header="Gecheckt am"
-                                    DisplayMemberBinding="{Binding PackedAt}" />
+                                    DisplayMemberBinding="{Binding PackedAt, StringFormat=dd.MM.yyyy HH:mm}" />
                     <GridViewColumn Header="Beschreibung"
                                     DisplayMemberBinding="{Binding Description}" />
                     <GridViewColumn Header="Löschen?">

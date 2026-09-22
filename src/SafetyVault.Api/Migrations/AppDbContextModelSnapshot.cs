@@ -61,8 +61,8 @@ namespace SafetyVault.Api.Migrations
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("PackedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset?>("PackedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<int>("TargetQuantity")
                         .HasColumnType("int");
