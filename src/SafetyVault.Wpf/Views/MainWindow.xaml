@@ -22,19 +22,37 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ListBox ItemsSource="{Binding Items}" Grid.Row="0">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <CheckBox IsChecked="{Binding IsPacked}" />
-                        <TextBlock Margin="8,0,0,0" Text="{Binding Name}" />
-                        <TextBlock Margin="8,0,0,0" Text="{Binding Quantity}" />
-                        <TextBlock Margin="8,0,0,0" Text="{Binding PackedAt}" />
-                        <Button Content="x     Eintrag löschen" Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        <ListView Grid.Row="0" 
+                  ItemsSource="{Binding Items}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Name"
+                                    DisplayMemberBinding="{Binding Name}" />
+                    <GridViewColumn Header="Gepackt">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsPacked, Mode=OneWay}" IsEnabled="False" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Ist-Menge"
+                                    DisplayMemberBinding="{Binding ActualQuantity}" />
+                    <GridViewColumn Header="Soll-Menge"
+                                    DisplayMemberBinding="{Binding TargetQuantity}" />
+                    <GridViewColumn Header="Gecheckt am"
+                                    DisplayMemberBinding="{Binding PackedAt}" />
+                    <GridViewColumn Header="Beschreibung"
+                                    DisplayMemberBinding="{Binding Description}" />
+                    <GridViewColumn Header="Löschen?">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Width="50" Content="x" Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
         <Grid Margin="10" Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />

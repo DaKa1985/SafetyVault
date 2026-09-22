@@ -6,10 +6,9 @@ namespace SafetyVault.Wpf.Models
     {
         private string _name = string.Empty;
         private string? _description;
-        private int _quantity;
+        private int _targetQuantity;
+        private int _actualQuantity;
         private DateTime? _packedAt;
-        private bool _isPacked;
-
         public int Id { get; set; }
         public string Name
         {
@@ -32,16 +31,29 @@ namespace SafetyVault.Wpf.Models
                 OnPropertyChanged();
             }
         }
-        public int Quantity 
+        public int TargetQuantity
         {
-            get => _quantity;
+            get => _targetQuantity;
             set
             {
-                if (_quantity == value) return;
-                _quantity = value;
+                if (_targetQuantity == value) return;
+                _targetQuantity = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(IsPacked));
             }
         }
+        public int ActualQuantity
+        {
+            get => _actualQuantity;
+            set
+            {
+                if (_actualQuantity == value) return;
+                _actualQuantity = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsPacked));
+            }
+        }
+
         public DateTime? PackedAt
         {
             get => _packedAt;
@@ -54,16 +66,6 @@ namespace SafetyVault.Wpf.Models
         }
         public int ChecklistId { get; set; }
 
-        public bool IsPacked
-        {
-            get => _isPacked;
-            set
-            {
-                if (_isPacked == value) return;
-                _isPacked = value;
-                PackedAt = value ? DateTime.Now : null;
-                OnPropertyChanged();
-            }
-        }      
+        public bool IsPacked => ActualQuantity >= TargetQuantity;
     }
 }

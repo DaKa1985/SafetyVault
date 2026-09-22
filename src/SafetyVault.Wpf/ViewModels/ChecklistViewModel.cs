@@ -56,7 +56,7 @@ namespace SafetyVault.Wpf.ViewModels
 
         private void AddItem()
         {
-            Items.Add(new ChecklistItem { Name = NewItemName, Quantity = _newItemQuantity });
+            Items.Add(new ChecklistItem { Name = NewItemName, TargetQuantity = _newItemQuantity, ActualQuantity = 0 });
             NewItemName = string.Empty;
             NewItemQuantityText = "1";
 
@@ -120,8 +120,8 @@ namespace SafetyVault.Wpf.ViewModels
                     {
                         Name = item.Name,
                         Description = item.Description,
-                        Quantity = item.TargetQuantity,
-                        IsPacked = item.IsPacked,
+                        TargetQuantity = item.TargetQuantity,
+                        ActualQuantity = item.ActualQuantity,
                     });
                 }
             }
