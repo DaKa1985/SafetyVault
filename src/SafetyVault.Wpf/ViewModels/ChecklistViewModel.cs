@@ -24,7 +24,7 @@ namespace SafetyVault.Wpf.ViewModels
             _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
             _itemApiClient = itemApiClient ?? throw new ArgumentNullException(nameof(itemApiClient));
             AddItemCommand = new AsyncRelayCommand(AddItemAsync, CanAddItem);
-            DeleteItemCommand = new RelayCommand<ChecklistItem>(DeleteItem, CanDeleteItem);
+            DeleteItemCommand = new AsyncRelayCommand<ChecklistItem>(DeleteItemAsync, CanDeleteItem);
             ValidateNewItemQuantityText();
         }
 
@@ -90,7 +90,7 @@ namespace SafetyVault.Wpf.ViewModels
         }
         private bool CanAddItem() =>
             SelectedCatalogItem is not null && !HasErrors;
-        private void DeleteItem(ChecklistItem? item)
+        private async Task DeleteItemAsync (ChecklistItem? item)
         {
             //vorher eine Bestätigung einholen, ob der Benutzer das Item wirklich löschen möchte
             if (item is null) return;
@@ -98,7 +98,15 @@ namespace SafetyVault.Wpf.ViewModels
             {
                 return;
             }
-            Items.Remove(item);
+            try
+            {
+                await _apiClient.DeleteItemFromChecklistAsync(item.ChecklistId, item.Id);
+                Items.Remove(item);
+            }
+            catch (HttpRequestException ex)
+            {
+                _dialogService.ShowError($"Der Artikel konnte nicht gelöscht werden. - {ex.Message}");
+            }
         }
         private bool CanDeleteItem(ChecklistItem? item) =>
             item is not null;

@@ -7,5 +7,6 @@ namespace SafetyVault.Wpf.Services
         Task<IEnumerable<ChecklistSummaryDto>> GetChecklistsAsync();
         Task<ChecklistDto?> GetChecklistByIdAsync(int id);
         Task<ChecklistItemDto> AddItemToChecklistAsync(int checklistId, CreateChecklistItemDto dto);
+        Task DeleteItemFromChecklistAsync(int checklistId, int checklistItemId);
     }
 }
