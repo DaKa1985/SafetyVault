@@ -11,7 +11,6 @@ namespace SafetyVault.Wpf.ViewModels
 {
     public class ChecklistViewModel : ValidatableBase
     {
-        private string _newItemName = string.Empty;
         private string _newItemQuantityText = "1";
         private int _newItemQuantity;
         private readonly IDialogService _dialogService;
@@ -24,22 +23,9 @@ namespace SafetyVault.Wpf.ViewModels
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
             _itemApiClient = itemApiClient ?? throw new ArgumentNullException(nameof(itemApiClient));
-            AddItemCommand = new RelayCommand(AddItem, CanAddItem);
+            AddItemCommand = new AsyncRelayCommand(AddItemAsync, CanAddItem);
             DeleteItemCommand = new RelayCommand<ChecklistItem>(DeleteItem, CanDeleteItem);
-            ValidateNewItemName();
             ValidateNewItemQuantityText();
-
-        }
-        public string NewItemName
-        {
-            get => _newItemName;
-            set
-            {
-                if (_newItemName == value) return;
-                _newItemName = value;
-                OnPropertyChanged();
-                ValidateNewItemName();
-            }
         }
 
         public string NewItemQuantityText
@@ -69,15 +55,41 @@ namespace SafetyVault.Wpf.ViewModels
         public ICommand AddItemCommand { get; }
         public ICommand DeleteItemCommand { get; }
 
-        private void AddItem()
+        private async Task AddItemAsync()
         {
-            Items.Add(new ChecklistItem { Name = NewItemName, TargetQuantity = _newItemQuantity, ActualQuantity = 0 });
-            NewItemName = string.Empty;
-            NewItemQuantityText = "1";
-
+            if (SelectedCatalogItem is null) return;
+            try
+            {
+                var dto = new CreateChecklistItemDto { ItemId = SelectedCatalogItem.Id, TargetQuantity = _newItemQuantity };
+                var newItem = await _apiClient.AddItemToChecklistAsync(1, dto);
+                NewItemQuantityText = "1";
+                Items.Add(new ChecklistItem
+                {
+                    Name = newItem.Name,
+                    Description = newItem.Description,
+                    TargetQuantity = newItem.TargetQuantity,
+                    ActualQuantity = newItem.ActualQuantity,
+                    PackedAt = newItem.PackedAt?.LocalDateTime,
+                    Id = newItem.Id,
+                    ChecklistId = newItem.ChecklistId,
+                    ItemId = newItem.ItemId
+                });
+            }
+            catch (HttpRequestException ex)
+            {
+                _dialogService.ShowError($"Der Artikel konnte nicht hinzugefügt werden. - {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                _dialogService.ShowError($"Die Antwort des Servers war nicht lesbar.- {ex.Message}");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _dialogService.ShowError($"Fehler beim Hinzufügen des Artikels: {ex.Message}");
+            }
         }
         private bool CanAddItem() =>
-            !HasErrors;
+            SelectedCatalogItem is not null && !HasErrors;
         private void DeleteItem(ChecklistItem? item)
         {
             //vorher eine Bestätigung einholen, ob der Benutzer das Item wirklich löschen möchte
@@ -90,19 +102,7 @@ namespace SafetyVault.Wpf.ViewModels
         }
         private bool CanDeleteItem(ChecklistItem? item) =>
             item is not null;
-        private void ValidateNewItemName()
-        {
-            var errors = new List<string>();
-            if (string.IsNullOrWhiteSpace(NewItemName))
-            {
-                errors.Add("Der Name darf nicht leer sein.");
-            }
-            if (NewItemName.Length > 100)
-            {
-                errors.Add("Der Name darf nicht länger als 100 Zeichen sein.");
-            }
-            SetErrors(nameof(NewItemName), errors);
-        }
+        
         private void ValidateNewItemQuantityText()
         {
             var errors = new List<string>();
