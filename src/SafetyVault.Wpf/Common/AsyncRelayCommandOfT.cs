@@ -7,7 +7,7 @@ namespace SafetyVault.Wpf.Common
         private readonly Func<T, Task> _execute;
         private readonly Func<T, bool>? _canExecute;
 
-        public AsyncRelayCommand(Func<T, Task> execute, Func<T,bool>? canExecute = null)
+        public AsyncRelayCommand(Func<T, Task> execute, Func<T, bool>? canExecute = null)
         {
             _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             _canExecute = canExecute;
@@ -26,9 +26,15 @@ namespace SafetyVault.Wpf.Common
         {
             if (parameter is T param)
             {
-                await _execute(param);
+                try
+                {
+                    await _execute(param);
+                }
+                finally
+                {
+                    CommandManager.InvalidateRequerySuggested();
+                }
             }
         }
     }
 }
-

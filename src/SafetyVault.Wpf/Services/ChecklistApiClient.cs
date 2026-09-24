@@ -41,5 +41,13 @@ namespace SafetyVault.Wpf.Services
             var response = await _httpClient.DeleteAsync($"{ChecklistsPath}/{checklistId}/items/{checklistItemId}");
             response.EnsureSuccessStatusCode();
         }
+
+        public async Task<ChecklistItemDto> UpdateChecklistItemAsync(int checklistId, int checklistItemId, UpdateChecklistItemDto dto)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"{ChecklistsPath}/{checklistId}/items/{checklistItemId}", dto);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<ChecklistItemDto>()
+                ?? throw new InvalidOperationException("The server returned an empty response.");
+        }
     }
 }

@@ -25,6 +25,9 @@ namespace SafetyVault.Wpf.ViewModels
             _itemApiClient = itemApiClient ?? throw new ArgumentNullException(nameof(itemApiClient));
             AddItemCommand = new AsyncRelayCommand(AddItemAsync, CanAddItem);
             DeleteItemCommand = new AsyncRelayCommand<ChecklistItem>(DeleteItemAsync, CanDeleteItem);
+            IncreaseQuantityCommand = new AsyncRelayCommand<ChecklistItem>(IncreaseQuantityAsync, CanIncreaseQuantity);
+            DecreaseQuantityCommand = new AsyncRelayCommand<ChecklistItem>(DecreaseQuantityAsync, CanDecreaseQuantity);
+            PackItemCommand = new AsyncRelayCommand<ChecklistItem>(PackItemAsync, CanPackItem);
             ValidateNewItemQuantityText();
         }
 
@@ -54,7 +57,9 @@ namespace SafetyVault.Wpf.ViewModels
         }
         public ICommand AddItemCommand { get; }
         public ICommand DeleteItemCommand { get; }
-
+        public ICommand IncreaseQuantityCommand { get; } 
+        public ICommand DecreaseQuantityCommand { get; } 
+        public ICommand PackItemCommand { get; }
         private async Task AddItemAsync()
         {
             if (SelectedCatalogItem is null) return;
@@ -108,6 +113,34 @@ namespace SafetyVault.Wpf.ViewModels
                 _dialogService.ShowError($"Der Artikel konnte nicht gelöscht werden. - {ex.Message}");
             }
         }
+        private async Task UpdateActualQuantityAsync(ChecklistItem? item, int newQuantity)
+        {
+            if (item is null) return;
+            try
+            {
+                var dto = new UpdateChecklistItemDto 
+                {
+                    TargetQuantity = item.TargetQuantity,
+                    ActualQuantity = newQuantity
+                };
+                var updatedItem = await _apiClient.UpdateChecklistItemAsync(item.ChecklistId, item.Id, dto);
+                item.ActualQuantity = updatedItem.ActualQuantity;
+                item.PackedAt = updatedItem.PackedAt?.LocalDateTime;
+            }
+            catch (HttpRequestException ex)
+            {
+                _dialogService.ShowError($"Der Artikel konnte nicht aktualisiert werden. - {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                _dialogService.ShowError($"Die Antwort des Servers war nicht lesbar.- {ex.Message}");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _dialogService.ShowError($"Fehler beim Aktualisieren des Artikels: {ex.Message}");
+            }
+        }
+
         private bool CanDeleteItem(ChecklistItem? item) =>
             item is not null;
         
@@ -128,7 +161,6 @@ namespace SafetyVault.Wpf.ViewModels
             }
             SetErrors(nameof(NewItemQuantityText), errors);
         }
-
         public async Task LoadAsync()
         {
             try
@@ -165,6 +197,27 @@ namespace SafetyVault.Wpf.ViewModels
             {
                 _dialogService.ShowError($"Die Antwort des Servers war nicht lesbar.- {ex.Message}");
             }
+        }
+        private bool CanIncreaseQuantity(ChecklistItem? item) => 
+            item is not null && !item.IsPacked;
+        private async Task IncreaseQuantityAsync(ChecklistItem? item)
+        {
+            if (item is null) return;
+            await UpdateActualQuantityAsync(item, item.ActualQuantity + 1);
+        }
+        private bool CanDecreaseQuantity(ChecklistItem? item) =>
+            item is not null && item.ActualQuantity > 0;
+        private async Task DecreaseQuantityAsync(ChecklistItem? item)
+        {
+            if (item is null) return;
+            await UpdateActualQuantityAsync(item, item.ActualQuantity - 1);
+        }
+        private bool CanPackItem(ChecklistItem? item) =>
+            item is not null && !item.IsPacked;
+        private async Task PackItemAsync(ChecklistItem? item)
+        {
+            if (item is null) return;
+            await UpdateActualQuantityAsync(item, item.TargetQuantity);
         }
     }
 }

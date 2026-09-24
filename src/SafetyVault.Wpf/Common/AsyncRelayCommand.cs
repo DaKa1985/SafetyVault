@@ -24,7 +24,14 @@ namespace SafetyVault.Wpf.Common
 
         public async void Execute(object? parameter)
         {
-            await _execute();
+            try
+            {
+                await _execute();
+            }
+            finally
+            {
+                CommandManager.InvalidateRequerySuggested();
+            }
         }
     }
 }

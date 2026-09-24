@@ -37,8 +37,29 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
+                    <GridViewColumn Header="-">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Width="30" Content="-" Command="{Binding DataContext.DecreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                     <GridViewColumn Header="Ist-Menge"
-                                    DisplayMemberBinding="{Binding ActualQuantity}" />
+                                    DisplayMemberBinding="{Binding ActualQuantity}"/>
+                    <GridViewColumn Header="+">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Width="30" Content="+" Command="{Binding DataContext.IncreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Packen">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Width="30" Content="✓" Command="{Binding DataContext.PackItemCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                     <GridViewColumn Header="Soll-Menge"
                                     DisplayMemberBinding="{Binding TargetQuantity}" />
                     <GridViewColumn Header="Gecheckt am"
