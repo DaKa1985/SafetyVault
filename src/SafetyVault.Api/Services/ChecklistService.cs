@@ -105,14 +105,14 @@ namespace SafetyVault.Api.Services
                 .FirstOrDefaultAsync();
             return item;
         }
-        public async Task<bool> UpdateItemAsync(int checklistId, int checklistItemId, UpdateChecklistItemDto dto)
+        public async Task<ChecklistItemDto?> UpdateItemAsync(int checklistId, int checklistItemId, UpdateChecklistItemDto dto)
         {
             var entry = await _context.ChecklistItems
                 .Where(ci => ci.ChecklistId == checklistId && ci.Id == checklistItemId)
                 .FirstOrDefaultAsync();
             if (entry is null)
             {
-                return false;
+                return null;
             }
             entry.TargetQuantity = dto.TargetQuantity;
             entry.ActualQuantity = dto.ActualQuantity;
@@ -129,7 +129,7 @@ namespace SafetyVault.Api.Services
             }
 
             await _context.SaveChangesAsync();
-            return true;
+            return await GetItemAsync(checklistId, checklistItemId);
         }
 
         public async Task<bool> DeleteItemAsync(int checklistId, int checklistItemId)

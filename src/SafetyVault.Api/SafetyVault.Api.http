@@ -19,12 +19,12 @@ Content-Type: application/json
 }
 
 ### Item aktualisieren
-PUT {{host}}/api/checklists/1/items/1
+PUT {{host}}/api/checklists/1/items/2
 Content-Type: application/json
 
 {
-  "targetQuantity": 2,
-  "actualQuantity": 2
+  "targetQuantity": 4,
+  "actualQuantity": 3
 }
 
 ### Item löschen

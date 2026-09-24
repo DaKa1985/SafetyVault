@@ -8,7 +8,7 @@ namespace SafetyVault.Api.Services
         Task<ChecklistDto?> GetByIdAsync(int id);
         Task<ChecklistItemDto?> GetItemAsync(int checklistId, int checklistItemId);
         Task<AddChecklistItemResult> AddItemAsync(int checklistId, CreateChecklistItemDto dto);
-        Task<bool> UpdateItemAsync(int checklistId, int checklistItemId, UpdateChecklistItemDto dto);
+        Task<ChecklistItemDto?> UpdateItemAsync(int checklistId, int checklistItemId, UpdateChecklistItemDto dto);
         Task<bool> DeleteItemAsync(int checklistId, int checklistItemId);
     }
 }

@@ -64,10 +64,10 @@ namespace SafetyVault.Api.Controllers
         }
 
         [HttpPut("{checklistId}/items/{id}")]
-        public async Task<ActionResult> UpdateItem(int checklistId, int id, UpdateChecklistItemDto dto)
+        public async Task<ActionResult<ChecklistItemDto>> UpdateItem(int checklistId, int id, UpdateChecklistItemDto dto)
         {
-            var success = await _checklistService.UpdateItemAsync(checklistId, id, dto);
-            return success ? NoContent() : NotFound();
+            var updated = await _checklistService.UpdateItemAsync(checklistId, id, dto);
+            return updated is not null ? Ok(updated) : NotFound();
         }
 
         [HttpDelete("{checklistId}/items/{id}")]
