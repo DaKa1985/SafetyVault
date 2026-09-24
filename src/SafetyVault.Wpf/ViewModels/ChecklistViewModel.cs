@@ -17,6 +17,7 @@ namespace SafetyVault.Wpf.ViewModels
         private readonly IChecklistApiClient _apiClient;
         private readonly IItemApiClient _itemApiClient;
         private ItemDto? _selectedCatalogItem;
+        private bool _isBusy;
 
         public ChecklistViewModel(IDialogService dialogService, IChecklistApiClient apiClient, IItemApiClient itemApiClient)
         {
@@ -42,7 +43,6 @@ namespace SafetyVault.Wpf.ViewModels
                 ValidateNewItemQuantityText();
             }
         }
-
         public ObservableCollection<ChecklistItem> Items { get; } = new();
         public ObservableCollection<ItemDto> AvailableItems { get; } = new();
         public ItemDto? SelectedCatalogItem
@@ -55,6 +55,16 @@ namespace SafetyVault.Wpf.ViewModels
                 OnPropertyChanged();
             }
         }
+        public bool IsBusy
+        {
+            get => _isBusy;
+            private set
+            {
+                if (_isBusy == value) return;
+                _isBusy = value;
+                OnPropertyChanged();
+            }
+        }
         public ICommand AddItemCommand { get; }
         public ICommand DeleteItemCommand { get; }
         public ICommand IncreaseQuantityCommand { get; } 
@@ -63,6 +73,7 @@ namespace SafetyVault.Wpf.ViewModels
         private async Task AddItemAsync()
         {
             if (SelectedCatalogItem is null) return;
+            IsBusy = true;
             try
             {
                 var dto = new CreateChecklistItemDto { ItemId = SelectedCatalogItem.Id, TargetQuantity = _newItemQuantity };
@@ -92,9 +103,13 @@ namespace SafetyVault.Wpf.ViewModels
             {
                 _dialogService.ShowError($"Fehler beim Hinzufügen des Artikels: {ex.Message}");
             }
+            finally
+            {
+                IsBusy = false;
+            }
         }
         private bool CanAddItem() =>
-            SelectedCatalogItem is not null && !HasErrors;
+            !IsBusy && SelectedCatalogItem is not null && !HasErrors;
         private async Task DeleteItemAsync (ChecklistItem? item)
         {
             //vorher eine Bestätigung einholen, ob der Benutzer das Item wirklich löschen möchte
@@ -103,6 +118,7 @@ namespace SafetyVault.Wpf.ViewModels
             {
                 return;
             }
+            IsBusy = true;
             try
             {
                 await _apiClient.DeleteItemFromChecklistAsync(item.ChecklistId, item.Id);
@@ -112,37 +128,14 @@ namespace SafetyVault.Wpf.ViewModels
             {
                 _dialogService.ShowError($"Der Artikel konnte nicht gelöscht werden. - {ex.Message}");
             }
-        }
-        private async Task UpdateActualQuantityAsync(ChecklistItem? item, int newQuantity)
-        {
-            if (item is null) return;
-            try
+            finally
             {
-                var dto = new UpdateChecklistItemDto 
-                {
-                    TargetQuantity = item.TargetQuantity,
-                    ActualQuantity = newQuantity
-                };
-                var updatedItem = await _apiClient.UpdateChecklistItemAsync(item.ChecklistId, item.Id, dto);
-                item.ActualQuantity = updatedItem.ActualQuantity;
-                item.PackedAt = updatedItem.PackedAt?.LocalDateTime;
-            }
-            catch (HttpRequestException ex)
-            {
-                _dialogService.ShowError($"Der Artikel konnte nicht aktualisiert werden. - {ex.Message}");
-            }
-            catch (JsonException ex)
-            {
-                _dialogService.ShowError($"Die Antwort des Servers war nicht lesbar.- {ex.Message}");
-            }
-            catch (InvalidOperationException ex)
-            {
-                _dialogService.ShowError($"Fehler beim Aktualisieren des Artikels: {ex.Message}");
+                IsBusy = false;
             }
         }
-
+        
         private bool CanDeleteItem(ChecklistItem? item) =>
-            item is not null;
+            !IsBusy && item is not null;
         
         private void ValidateNewItemQuantityText()
         {
@@ -198,22 +191,55 @@ namespace SafetyVault.Wpf.ViewModels
                 _dialogService.ShowError($"Die Antwort des Servers war nicht lesbar.- {ex.Message}");
             }
         }
+        private async Task UpdateActualQuantityAsync(ChecklistItem? item, int newQuantity)
+        {
+            if (item is null) return;
+            IsBusy = true;
+            try
+            {
+                var dto = new UpdateChecklistItemDto
+                {
+                    TargetQuantity = item.TargetQuantity,
+                    ActualQuantity = newQuantity
+                };
+                var updatedItem = await _apiClient.UpdateChecklistItemAsync(item.ChecklistId, item.Id, dto);
+                item.ActualQuantity = updatedItem.ActualQuantity;
+                item.PackedAt = updatedItem.PackedAt?.LocalDateTime;
+            }
+            catch (HttpRequestException ex)
+            {
+                _dialogService.ShowError($"Der Artikel konnte nicht aktualisiert werden. - {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                _dialogService.ShowError($"Die Antwort des Servers war nicht lesbar.- {ex.Message}");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _dialogService.ShowError($"Fehler beim Aktualisieren des Artikels: {ex.Message}");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
         private bool CanIncreaseQuantity(ChecklistItem? item) => 
-            item is not null && !item.IsPacked;
+            !IsBusy && item is not null && !item.IsPacked;
         private async Task IncreaseQuantityAsync(ChecklistItem? item)
         {
             if (item is null) return;
             await UpdateActualQuantityAsync(item, item.ActualQuantity + 1);
         }
         private bool CanDecreaseQuantity(ChecklistItem? item) =>
-            item is not null && item.ActualQuantity > 0;
+            !IsBusy && item is not null && item.ActualQuantity > 0;
         private async Task DecreaseQuantityAsync(ChecklistItem? item)
         {
             if (item is null) return;
             await UpdateActualQuantityAsync(item, item.ActualQuantity - 1);
         }
         private bool CanPackItem(ChecklistItem? item) =>
-            item is not null && !item.IsPacked;
+            !IsBusy && item is not null && !item.IsPacked;
         private async Task PackItemAsync(ChecklistItem? item)
         {
             if (item is null) return;
