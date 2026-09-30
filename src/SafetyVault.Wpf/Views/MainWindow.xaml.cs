@@ -10,20 +10,20 @@ namespace SafetyVault.Wpf.Views;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private readonly ChecklistViewModel _viewModel;
+    private readonly ChecklistViewModel _checklistViewModel;
     public MainWindow()
     {
         InitializeComponent();
         var httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7247/") };
         var apiClient = new ChecklistApiClient(httpClient);
         var itemApiClient = new ItemApiClient(httpClient);
-        _viewModel = new ChecklistViewModel(new DialogService(), apiClient, itemApiClient);
-        DataContext = _viewModel;
+        _checklistViewModel = new ChecklistViewModel(new DialogService(), apiClient, itemApiClient);
+        DataContext = new MainViewModel(_checklistViewModel);
         Loaded += MainWindow_Loaded;
     }
 
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        await _viewModel.LoadAsync();
+        await _checklistViewModel.LoadAsync();
     }
 }
