@@ -10,5 +10,8 @@
         <TabItem Header="Checklisten">
             <local:ChecklistView DataContext="{Binding Checklists}"/>
         </TabItem>
+        <TabItem Header="Artikel">
+            <local:ItemCatalogView DataContext="{Binding ItemCatalog}"/>
+        </TabItem>
     </TabControl>
 </Window>
