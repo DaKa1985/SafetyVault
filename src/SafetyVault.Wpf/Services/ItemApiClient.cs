@@ -1,4 +1,6 @@
 ﻿using SafetyVault.Shared.Models;
+using SafetyVault.Wpf.Exceptions;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 
@@ -23,6 +25,18 @@ namespace SafetyVault.Wpf.Services
         {
             return await _httpClient.GetFromJsonAsync<IEnumerable<ItemDto>>(ItemsPath)
                 ?? Enumerable.Empty<ItemDto>();
+        }
+
+        public async Task<ItemDto> CreateItemAsync(CreateItemDto dto)
+        {
+            var response = await _httpClient.PostAsJsonAsync(ItemsPath, dto);
+            if (response.StatusCode == HttpStatusCode.Conflict)
+            {
+                throw new ItemAlreadyExistsException(dto.Name);
+            }
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<ItemDto>()
+                ?? throw new InvalidOperationException("The server returned an empty response.");
         }
     }
 }
