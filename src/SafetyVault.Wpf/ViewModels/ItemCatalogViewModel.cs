@@ -11,6 +11,7 @@ namespace SafetyVault.Wpf.ViewModels
     public class ItemCatalogViewModel : ValidatableBase
     {
         private string _newItemName = string.Empty;
+        private string _newItemDescription = string.Empty;
         private readonly IItemApiClient _itemApiClient;
         private readonly IDialogService _dialogService;
         private bool _isBusy;
@@ -33,6 +34,17 @@ namespace SafetyVault.Wpf.ViewModels
                 _newItemName = value;
                 OnPropertyChanged();
                 ValidateNewItemName();
+            }
+        }
+        public string NewItemDescription
+        {
+            get => _newItemDescription;
+            set
+            {
+                if (_newItemDescription == value) return;
+                _newItemDescription = value;
+                OnPropertyChanged();
+                ValidateNewItemDescription();
             }
         }
 
@@ -60,6 +72,15 @@ namespace SafetyVault.Wpf.ViewModels
             }
             SetErrors(nameof(NewItemName), errors);
         }
+        private void ValidateNewItemDescription()
+        {
+            var errors = new List<string>();
+            if (!string.IsNullOrWhiteSpace(NewItemDescription) && NewItemDescription.Trim().Length > 500)
+            {
+                errors.Add("Die Artikelbeschreibung darf nicht länger als 500 Zeichen sein.");
+            }
+            SetErrors(nameof(NewItemDescription), errors);
+        }
 
         private bool CanCreateItem() =>
             !IsBusy && !HasErrors && !string.IsNullOrWhiteSpace(NewItemName);
@@ -73,11 +94,19 @@ namespace SafetyVault.Wpf.ViewModels
             IsBusy = true;
             try
             {
-                var newItemDto = new CreateItemDto { Name = NewItemName.Trim() };
+                var newItemDto = new CreateItemDto
+                {
+                    Name = NewItemName.Trim(),
+                    Description = string.IsNullOrWhiteSpace(NewItemDescription)
+                    ? null
+                    : NewItemDescription.Trim()
+                };
                 await _itemApiClient.CreateItemAsync(newItemDto);
                 await LoadItemsAsync();
                 NewItemName = string.Empty;
+                NewItemDescription = string.Empty;
                 ClearErrors(nameof(NewItemName));
+                ClearErrors(nameof(NewItemDescription));
             }
             catch (ItemAlreadyExistsException ex)
             {

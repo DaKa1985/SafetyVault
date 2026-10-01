@@ -12,8 +12,15 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
-            <TextBox Width="250" Text="{Binding NewItemName, UpdateSourceTrigger=PropertyChanged}" />
-            <Button Content="Anlegen" Command="{Binding CreateItemCommand}" Margin="5,0,0,0" />
+            <StackPanel>
+                <Label Content="_Name" Target="{Binding ElementName=NameTextBox}"/>
+                <TextBox x:Name="NameTextBox"  Width="250" Text="{Binding NewItemName, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
+            <StackPanel>
+                <Label Content="_Beschreibung" Target="{Binding ElementName=BeschreibungTextBox}"/>
+                <TextBox x:Name="BeschreibungTextBox" Width="400" Text="{Binding NewItemDescription, UpdateSourceTrigger=PropertyChanged}" Margin="5,0,0,0" />
+            </StackPanel>
+            <Button VerticalAlignment="Bottom" Content="Anlegen" Command="{Binding CreateItemCommand}" Margin="5,0,0,0" />
         </StackPanel>
         <ListView Grid.Row="1" ItemsSource="{Binding Items}">
             <ListView.View>

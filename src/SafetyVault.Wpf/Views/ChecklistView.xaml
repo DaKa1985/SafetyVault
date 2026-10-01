@@ -6,17 +6,6 @@
              xmlns:local="clr-namespace:SafetyVault.Wpf.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <UserControl.Resources>
-        <Style TargetType="TextBox">
-            <Style.Triggers>
-                <Trigger Property="Validation.HasError" Value="True">
-                    <Setter Property="ToolTip"
-                        Value="{Binding RelativeSource={RelativeSource Self},
-                        Path=(Validation.Errors)[0].ErrorContent}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -82,12 +71,20 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <ComboBox Grid.Column="0"
+            <StackPanel>
+                <Label Content="_Artikel" Target="{Binding ElementName=ItemComboBox}"/>
+                <ComboBox 
+                    Margin="5,0,0,0"
+                    x:Name="ItemComboBox"
                   ItemsSource="{Binding AvailableItems}"
                   DisplayMemberPath="Name"
                   SelectedItem="{Binding SelectedCatalogItem}"/>
-            <TextBox Text="{Binding NewItemQuantityText, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1"/>
-            <Button Content="+     Eintrag hinzufügen" Command="{Binding AddItemCommand}" Grid.Column="2" />
+            </StackPanel>
+            <StackPanel Grid.Column="1">
+                <Label Content="_Menge" Target="{Binding ElementName=QuantityTextBox}"/>
+                <TextBox Margin="5,0,0,0" x:Name="QuantityTextBox" Text="{Binding NewItemQuantityText, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
+            <Button Margin="5,0,0,0" VerticalAlignment="Bottom" Content="+     Eintrag hinzufügen" Command="{Binding AddItemCommand}" Grid.Column="2" />
         </Grid>
     </Grid>
 </UserControl>
