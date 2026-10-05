@@ -5,86 +5,95 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SafetyVault.Wpf.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="1000">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <ListView Grid.Row="0" 
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <ListBox Grid.Column="0"
+                 Margin="5" 
+                 ItemsSource="{Binding AvailableChecklists}"
+                 DisplayMemberPath="Name"
+                 SelectedItem="{Binding SelectedChecklist}" />
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <ListView Grid.Row="0" 
               ItemsSource="{Binding Items}">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="Nr."
-                                DisplayMemberBinding="{Binding Id}" />
-                    <GridViewColumn Header="Name"
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Name"
                                 DisplayMemberBinding="{Binding Name}" />
-                    <GridViewColumn Header="Gepackt">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <CheckBox IsChecked="{Binding IsPacked, Mode=OneWay}" IsEnabled="False" />
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Header="-">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <Button Width="30" Content="-" Command="{Binding DataContext.DecreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding}" />
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Header="Ist-Menge"
+                        <GridViewColumn Header="Gepackt">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding IsPacked, Mode=OneWay}" IsEnabled="False" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="-">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Width="30" Content="-" Command="{Binding DataContext.DecreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Ist-Menge"
                                 DisplayMemberBinding="{Binding ActualQuantity}"/>
-                    <GridViewColumn Header="+">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <Button Width="30" Content="+" Command="{Binding DataContext.IncreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding}" />
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Header="Packen">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <Button Width="30" Content="✓" Command="{Binding DataContext.PackItemCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding}" />
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Header="Soll-Menge"
+                        <GridViewColumn Header="+">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Width="30" Content="+" Command="{Binding DataContext.IncreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Packen">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Width="30" Content="✓" Command="{Binding DataContext.PackItemCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Soll-Menge"
                                 DisplayMemberBinding="{Binding TargetQuantity}" />
-                    <GridViewColumn Header="Gecheckt am"
+                        <GridViewColumn Header="Gecheckt am"
                                 DisplayMemberBinding="{Binding PackedAt, StringFormat=dd.MM.yyyy HH:mm}" />
-                    <GridViewColumn Header="Beschreibung"
+                        <GridViewColumn Header="Beschreibung"
                                 DisplayMemberBinding="{Binding Description}" />
-                    <GridViewColumn Header="Löschen?">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <Button Width="50" Content="x" Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding}" />
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                </GridView>
-            </ListView.View>
-        </ListView>
-        <Grid Margin="10" Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel>
-                <Label Content="_Artikel" Target="{Binding ElementName=ItemComboBox}"/>
-                <ComboBox 
+                        <GridViewColumn Header="Löschen?">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Width="50" Content="x" Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <Grid Margin="10" Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <Label Content="_Artikel" Target="{Binding ElementName=ItemComboBox}"/>
+                    <ComboBox 
                     Margin="5,0,0,0"
                     x:Name="ItemComboBox"
                   ItemsSource="{Binding AvailableItems}"
                   DisplayMemberPath="Name"
                   SelectedItem="{Binding SelectedCatalogItem}"/>
-            </StackPanel>
-            <StackPanel Grid.Column="1">
-                <Label Content="_Menge" Target="{Binding ElementName=QuantityTextBox}"/>
-                <TextBox Margin="5,0,0,0" x:Name="QuantityTextBox" Text="{Binding NewItemQuantityText, UpdateSourceTrigger=PropertyChanged}" />
-            </StackPanel>
-            <Button Margin="5,0,0,0" VerticalAlignment="Bottom" Content="+     Eintrag hinzufügen" Command="{Binding AddItemCommand}" Grid.Column="2" />
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                    <Label Content="_Menge" Target="{Binding ElementName=QuantityTextBox}"/>
+                    <TextBox Margin="5,0,0,0" x:Name="QuantityTextBox" Text="{Binding NewItemQuantityText, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <Button Margin="5,0,0,0" VerticalAlignment="Bottom" Content="+     Eintrag hinzufügen" Command="{Binding AddItemCommand}" Grid.Column="2" />
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>

@@ -13,10 +13,12 @@ namespace SafetyVault.Wpf.ViewModels
     {
         private string _newItemQuantityText = "1";
         private int _newItemQuantity;
+        private int _loadVersion;
         private readonly IDialogService _dialogService;
         private readonly IChecklistApiClient _apiClient;
         private readonly IItemApiClient _itemApiClient;
         private ItemDto? _selectedCatalogItem;
+        private ChecklistSummaryDto? _selectedChecklist;
         private bool _isBusy;
 
         public ChecklistViewModel(IDialogService dialogService, IChecklistApiClient apiClient, IItemApiClient itemApiClient)
@@ -45,6 +47,7 @@ namespace SafetyVault.Wpf.ViewModels
         }
         public ObservableCollection<ChecklistItem> Items { get; } = new();
         public ObservableCollection<ItemDto> AvailableItems { get; } = new();
+        public ObservableCollection<ChecklistSummaryDto> AvailableChecklists { get; } = new();
         public ItemDto? SelectedCatalogItem
         {
             get => _selectedCatalogItem;
@@ -53,6 +56,17 @@ namespace SafetyVault.Wpf.ViewModels
                 if (_selectedCatalogItem == value) return;
                 _selectedCatalogItem = value;
                 OnPropertyChanged();
+            }
+        }
+        public ChecklistSummaryDto? SelectedChecklist
+        {
+            get => _selectedChecklist;
+            set
+            {
+                if (_selectedChecklist == value) return;
+                _selectedChecklist = value;
+                OnPropertyChanged();
+                _ = LoadSelectedChecklistAsync();
             }
         }
         public bool IsBusy
@@ -67,17 +81,17 @@ namespace SafetyVault.Wpf.ViewModels
         }
         public ICommand AddItemCommand { get; }
         public ICommand DeleteItemCommand { get; }
-        public ICommand IncreaseQuantityCommand { get; } 
-        public ICommand DecreaseQuantityCommand { get; } 
+        public ICommand IncreaseQuantityCommand { get; }
+        public ICommand DecreaseQuantityCommand { get; }
         public ICommand PackItemCommand { get; }
         private async Task AddItemAsync()
         {
-            if (SelectedCatalogItem is null) return;
+            if (SelectedChecklist is null || SelectedCatalogItem is null) return;
             IsBusy = true;
             try
             {
                 var dto = new CreateChecklistItemDto { ItemId = SelectedCatalogItem.Id, TargetQuantity = _newItemQuantity };
-                var newItem = await _apiClient.AddItemToChecklistAsync(1, dto);
+                var newItem = await _apiClient.AddItemToChecklistAsync(SelectedChecklist.Id, dto);
                 NewItemQuantityText = "1";
                 Items.Add(new ChecklistItem
                 {
@@ -109,8 +123,8 @@ namespace SafetyVault.Wpf.ViewModels
             }
         }
         private bool CanAddItem() =>
-            !IsBusy && SelectedCatalogItem is not null && !HasErrors;
-        private async Task DeleteItemAsync (ChecklistItem? item)
+            !IsBusy && SelectedChecklist is not null && SelectedCatalogItem is not null && !HasErrors;
+        private async Task DeleteItemAsync(ChecklistItem? item)
         {
             //vorher eine Bestätigung einholen, ob der Benutzer das Item wirklich löschen möchte
             if (item is null) return;
@@ -133,10 +147,10 @@ namespace SafetyVault.Wpf.ViewModels
                 IsBusy = false;
             }
         }
-        
+
         private bool CanDeleteItem(ChecklistItem? item) =>
             !IsBusy && item is not null;
-        
+
         private void ValidateNewItemQuantityText()
         {
             var errors = new List<string>();
@@ -158,29 +172,20 @@ namespace SafetyVault.Wpf.ViewModels
         {
             try
             {
-                var checklist = await _apiClient.GetChecklistByIdAsync(1); // Feste Id bis zur Checklisten-Auswahl in Woche 2
-                if (checklist is null) return;
-                Items.Clear();
-                foreach (var item in checklist.Items)
+                var checklists = await _apiClient.GetChecklistsAsync();
+                AvailableChecklists.Clear();
+                foreach (var checklist in checklists)
                 {
-                    Items.Add(new ChecklistItem
-                    {
-                        Name = item.Name,
-                        Description = item.Description,
-                        TargetQuantity = item.TargetQuantity,
-                        ActualQuantity = item.ActualQuantity,
-                        PackedAt = item.PackedAt?.LocalDateTime,
-                        Id = item.Id,
-                        ChecklistId = item.ChecklistId,
-                        ItemId = item.ItemId
-                    });
+                    AvailableChecklists.Add(checklist);
                 }
+
                 var catalog = await _itemApiClient.GetItemsAsync();
                 AvailableItems.Clear();
                 foreach (var item in catalog)
                 {
                     AvailableItems.Add(item);
                 }
+                SelectedChecklist = AvailableChecklists.FirstOrDefault();
             }
             catch (HttpRequestException ex)
             {
@@ -223,8 +228,48 @@ namespace SafetyVault.Wpf.ViewModels
                 IsBusy = false;
             }
         }
+        private async Task LoadSelectedChecklistAsync()
+        {
+            var version = ++_loadVersion;
+            IsBusy = true;
+            try
+            {
+                Items.Clear();
+                if (SelectedChecklist is null) return;
+                var checklistId = SelectedChecklist.Id;
+                var checklist = await _apiClient.GetChecklistByIdAsync(checklistId);
+                if (version != _loadVersion) return;
+                if (checklist is null) return;
+                foreach (var item in checklist.Items)
+                {
+                    Items.Add(new ChecklistItem
+                    {
+                        Name = item.Name,
+                        Description = item.Description,
+                        TargetQuantity = item.TargetQuantity,
+                        ActualQuantity = item.ActualQuantity,
+                        PackedAt = item.PackedAt?.LocalDateTime,
+                        Id = item.Id,
+                        ChecklistId = item.ChecklistId,
+                        ItemId = item.ItemId
+                    });
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                _dialogService.ShowError($"Die Anwendung konnte den Server nicht erreichen. Prüfen Sie, ob die API läuft. - {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                _dialogService.ShowError($"Die Antwort des Servers war nicht lesbar.- {ex.Message}");
+            }
+            finally
+            {
+                if (version == _loadVersion) IsBusy = false;
+            }
+        }
 
-        private bool CanIncreaseQuantity(ChecklistItem? item) => 
+        private bool CanIncreaseQuantity(ChecklistItem? item) =>
             !IsBusy && item is not null && !item.IsPacked;
         private async Task IncreaseQuantityAsync(ChecklistItem? item)
         {

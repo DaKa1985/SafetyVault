@@ -1,5 +1,4 @@
 ﻿using SafetyVault.Shared.Models;
-using SafetyVault.Wpf.Models;
 namespace SafetyVault.Wpf.Services
 {
     public interface IChecklistApiClient
@@ -9,5 +8,6 @@ namespace SafetyVault.Wpf.Services
         Task<ChecklistItemDto> AddItemToChecklistAsync(int checklistId, CreateChecklistItemDto dto);
         Task DeleteItemFromChecklistAsync(int checklistId, int checklistItemId);
         Task<ChecklistItemDto> UpdateChecklistItemAsync(int checklistId, int checklistItemId, UpdateChecklistItemDto dto);
+
     }
 }

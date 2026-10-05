@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SafetyVault.Wpf.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="1000">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -17,8 +17,8 @@
                 <TextBox x:Name="NameTextBox"  Width="250" Text="{Binding NewItemName, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
             <StackPanel>
-                <Label Content="_Beschreibung" Target="{Binding ElementName=BeschreibungTextBox}"/>
-                <TextBox x:Name="BeschreibungTextBox" Width="400" Text="{Binding NewItemDescription, UpdateSourceTrigger=PropertyChanged}" Margin="5,0,0,0" />
+                <Label Content="_Beschreibung" Target="{Binding ElementName=DescriptionTextBox}"/>
+                <TextBox x:Name="DescriptionTextBox" Width="400" Text="{Binding NewItemDescription, UpdateSourceTrigger=PropertyChanged}" Margin="5,0,0,0" />
             </StackPanel>
             <Button VerticalAlignment="Bottom" Content="Anlegen" Command="{Binding CreateItemCommand}" Margin="5,0,0,0" />
         </StackPanel>

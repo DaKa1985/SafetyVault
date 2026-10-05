@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SafetyVault.Wpf.Views"
         mc:Ignorable="d"
-        Title="SafetyVault" Height="450" Width="800">
+        Title="SafetyVault" Height="450" Width="1000">
     <TabControl>
         <TabItem Header="Checklisten">
             <local:ChecklistView DataContext="{Binding Checklists}"/>

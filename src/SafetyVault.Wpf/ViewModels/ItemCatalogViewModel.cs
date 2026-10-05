@@ -4,7 +4,6 @@ using SafetyVault.Wpf.Exceptions;
 using SafetyVault.Wpf.Services;
 using System.Collections.ObjectModel;
 using System.Net.Http;
-using System.Windows.Input;
 
 namespace SafetyVault.Wpf.ViewModels
 {
@@ -123,7 +122,6 @@ namespace SafetyVault.Wpf.ViewModels
             finally
             {
                 IsBusy = false;
-                CommandManager.InvalidateRequerySuggested();
             }
         }
 
