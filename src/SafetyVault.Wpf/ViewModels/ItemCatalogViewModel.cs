@@ -13,17 +13,18 @@ namespace SafetyVault.Wpf.ViewModels
         private string _newItemDescription = string.Empty;
         private readonly IItemApiClient _itemApiClient;
         private readonly IDialogService _dialogService;
+        private readonly IItemCatalogStore _itemCatalogStore;
         private bool _isBusy;
-
-        public ItemCatalogViewModel(IItemApiClient itemApiClient, IDialogService dialogService)
+        public ItemCatalogViewModel(IItemApiClient itemApiClient, IDialogService dialogService, IItemCatalogStore itemCatalogStore)
         {
             _itemApiClient = itemApiClient ?? throw new ArgumentNullException(nameof(itemApiClient));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+            _itemCatalogStore = itemCatalogStore ?? throw new ArgumentNullException(nameof(itemCatalogStore));
             CreateItemCommand = new AsyncRelayCommand(CreateItemAsync, CanCreateItem);
         }
 
         public AsyncRelayCommand CreateItemCommand { get; }
-        public ObservableCollection<ItemDto> Items { get; } = new();
+        public ReadOnlyObservableCollection<ItemDto> Items => _itemCatalogStore.Items;
         public string NewItemName
         {
             get => _newItemName;
@@ -129,12 +130,8 @@ namespace SafetyVault.Wpf.ViewModels
         {
             try
             {
-                var items = await _itemApiClient.GetItemsAsync();
-                Items.Clear();
-                foreach (var item in items)
-                {
-                    Items.Add(item);
-                }
+                await _itemCatalogStore.LoadAsync();
+
             }
             catch (Exception ex)
             {

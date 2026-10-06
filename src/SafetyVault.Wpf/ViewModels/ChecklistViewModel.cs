@@ -16,16 +16,16 @@ namespace SafetyVault.Wpf.ViewModels
         private int _loadVersion;
         private readonly IDialogService _dialogService;
         private readonly IChecklistApiClient _apiClient;
-        private readonly IItemApiClient _itemApiClient;
+        private readonly IItemCatalogStore _itemCatalogStore;
         private ItemDto? _selectedCatalogItem;
         private ChecklistSummaryDto? _selectedChecklist;
         private bool _isBusy;
 
-        public ChecklistViewModel(IDialogService dialogService, IChecklistApiClient apiClient, IItemApiClient itemApiClient)
+        public ChecklistViewModel(IDialogService dialogService, IChecklistApiClient apiClient, IItemCatalogStore itemCatalogStore)
         {
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
-            _itemApiClient = itemApiClient ?? throw new ArgumentNullException(nameof(itemApiClient));
+            _itemCatalogStore = itemCatalogStore ?? throw new ArgumentNullException(nameof(itemCatalogStore));
             AddItemCommand = new AsyncRelayCommand(AddItemAsync, CanAddItem);
             DeleteItemCommand = new AsyncRelayCommand<ChecklistItem>(DeleteItemAsync, CanDeleteItem);
             IncreaseQuantityCommand = new AsyncRelayCommand<ChecklistItem>(IncreaseQuantityAsync, CanIncreaseQuantity);
@@ -46,7 +46,7 @@ namespace SafetyVault.Wpf.ViewModels
             }
         }
         public ObservableCollection<ChecklistItem> Items { get; } = new();
-        public ObservableCollection<ItemDto> AvailableItems { get; } = new();
+        public ReadOnlyObservableCollection<ItemDto> AvailableItems => _itemCatalogStore.Items;
         public ObservableCollection<ChecklistSummaryDto> AvailableChecklists { get; } = new();
         public ItemDto? SelectedCatalogItem
         {
@@ -177,13 +177,6 @@ namespace SafetyVault.Wpf.ViewModels
                 foreach (var checklist in checklists)
                 {
                     AvailableChecklists.Add(checklist);
-                }
-
-                var catalog = await _itemApiClient.GetItemsAsync();
-                AvailableItems.Clear();
-                foreach (var item in catalog)
-                {
-                    AvailableItems.Add(item);
                 }
                 SelectedChecklist = AvailableChecklists.FirstOrDefault();
             }
