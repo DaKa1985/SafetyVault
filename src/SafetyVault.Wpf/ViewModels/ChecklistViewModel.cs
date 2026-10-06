@@ -93,17 +93,7 @@ namespace SafetyVault.Wpf.ViewModels
                 var dto = new CreateChecklistItemDto { ItemId = SelectedCatalogItem.Id, TargetQuantity = _newItemQuantity };
                 var newItem = await _apiClient.AddItemToChecklistAsync(SelectedChecklist.Id, dto);
                 NewItemQuantityText = "1";
-                Items.Add(new ChecklistItem
-                {
-                    Name = newItem.Name,
-                    Description = newItem.Description,
-                    TargetQuantity = newItem.TargetQuantity,
-                    ActualQuantity = newItem.ActualQuantity,
-                    PackedAt = newItem.PackedAt?.LocalDateTime,
-                    Id = newItem.Id,
-                    ChecklistId = newItem.ChecklistId,
-                    ItemId = newItem.ItemId
-                });
+                Items.Add(ToChecklistItem(newItem));
             }
             catch (HttpRequestException ex)
             {
@@ -122,6 +112,22 @@ namespace SafetyVault.Wpf.ViewModels
                 IsBusy = false;
             }
         }
+
+        private static ChecklistItem ToChecklistItem(ChecklistItemDto dto)
+        {
+            return new ChecklistItem
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                TargetQuantity = dto.TargetQuantity,
+                ActualQuantity = dto.ActualQuantity,
+                PackedAt = dto.PackedAt?.LocalDateTime,
+                Id = dto.Id,
+                ChecklistId = dto.ChecklistId,
+                ItemId = dto.ItemId
+            };
+        }
+
         private bool CanAddItem() =>
             !IsBusy && SelectedChecklist is not null && SelectedCatalogItem is not null && !HasErrors;
         private async Task DeleteItemAsync(ChecklistItem? item)
@@ -235,17 +241,7 @@ namespace SafetyVault.Wpf.ViewModels
                 if (checklist is null) return;
                 foreach (var item in checklist.Items)
                 {
-                    Items.Add(new ChecklistItem
-                    {
-                        Name = item.Name,
-                        Description = item.Description,
-                        TargetQuantity = item.TargetQuantity,
-                        ActualQuantity = item.ActualQuantity,
-                        PackedAt = item.PackedAt?.LocalDateTime,
-                        Id = item.Id,
-                        ChecklistId = item.ChecklistId,
-                        ItemId = item.ItemId
-                    });
+                    Items.Add(ToChecklistItem(item));
                 }
             }
             catch (HttpRequestException ex)
