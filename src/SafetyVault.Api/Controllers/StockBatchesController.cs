@@ -32,5 +32,21 @@ namespace SafetyVault.Api.Controllers
             }
             return stockBatch;
         }
+        [HttpPost]
+        public async Task<ActionResult<StockBatchDto>> BookIn(BookInStockBatchDto dto)
+        {
+            var result = await _stockBatchService.BookInAsync(dto);
+            switch (result.Status)
+            {
+                case BookInStockBatchStatus.Created:
+                    return CreatedAtAction(nameof(GetById), new { id = result.StockBatch!.Id }, result.StockBatch);
+                case BookInStockBatchStatus.Increased:
+                    return Ok(result.StockBatch);
+                case BookInStockBatchStatus.ItemNotFound:
+                    return BadRequest($"Item with ID '{dto.ItemId}' not found.");
+                default:
+                    throw new InvalidOperationException($"Unexpected status: {result.Status}");
+            }
+        }
     }
 }

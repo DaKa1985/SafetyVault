@@ -53,3 +53,53 @@ GET {{host}}/api/stockbatches/1
 
 ### Vorräte: unbekannte Charge -> 404
 GET {{host}}/api/stockbatches/99
+
+### Einbuchen 1: gleiche Charge mit MHD -> 200, Menge erhöht
+POST {{host}}/api/stockbatches
+Content-Type: application/json
+
+{
+  "itemId": 1,
+  "quantity": 2,
+  "bestBefore": "2027-03-01"
+}
+
+### Einbuchen 2: gleiche Charge Ohne MHD -> 200, Menge erhöht (null-Vergleich!)
+POST {{host}}/api/stockbatches
+Content-Type: application/json
+
+{
+  "itemId": 1,
+  "quantity": 1,
+  "bestBefore": null
+}
+
+### Einbuchen 3: neue Charge → 201 + Location
+POST {{host}}/api/stockbatches
+Content-Type: application/json
+
+{
+  "itemId": 2,
+  "quantity": 6,
+  "bestBefore": "2027-06-15"
+}
+
+### Einbuchen 4: unbekannter Artikel → 400
+POST {{host}}/api/stockbatches
+Content-Type: application/json
+
+{
+  "itemId": 99,
+  "quantity": 1,
+  "bestBefore": null
+}
+
+### Einbuchen 5: Menge 0 → 400 (Validierung)
+POST {{host}}/api/stockbatches
+Content-Type: application/json
+
+{
+  "itemId": 1,
+  "quantity": 0,
+  "bestBefore": null
+}

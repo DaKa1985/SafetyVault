@@ -6,5 +6,6 @@ namespace SafetyVault.Api.Services
     {
         Task<IEnumerable<StockBatchDto>> GetAllAsync();
         Task<StockBatchDto?> GetByIdAsync(int id);
+        Task<BookInStockBatchResult> BookInAsync(BookInStockBatchDto dto);
     }
 }
