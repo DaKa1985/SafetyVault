@@ -101,6 +101,31 @@ namespace SafetyVault.Api.Migrations
                     b.ToTable("Items");
                 });
 
+            modelBuilder.Entity("SafetyVault.Api.Entities.StockBatch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("BestBefore")
+                        .HasColumnType("date");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId", "BestBefore")
+                        .IsUnique();
+
+                    b.ToTable("StockBatches");
+                });
+
             modelBuilder.Entity("SafetyVault.Api.Entities.ChecklistItem", b =>
                 {
                     b.HasOne("SafetyVault.Api.Entities.Checklist", "Checklist")
@@ -120,6 +145,17 @@ namespace SafetyVault.Api.Migrations
                     b.Navigation("Item");
                 });
 
+            modelBuilder.Entity("SafetyVault.Api.Entities.StockBatch", b =>
+                {
+                    b.HasOne("SafetyVault.Api.Entities.Item", "Item")
+                        .WithMany("StockBatches")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+                });
+
             modelBuilder.Entity("SafetyVault.Api.Entities.Checklist", b =>
                 {
                     b.Navigation("ChecklistItems");
@@ -128,6 +164,8 @@ namespace SafetyVault.Api.Migrations
             modelBuilder.Entity("SafetyVault.Api.Entities.Item", b =>
                 {
                     b.Navigation("ChecklistItems");
+
+                    b.Navigation("StockBatches");
                 });
 #pragma warning restore 612, 618
         }
