@@ -14,6 +14,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddScoped<IChecklistService, ChecklistService>();
 builder.Services.AddScoped<IItemService, ItemService>();
+builder.Services.AddScoped<IStockBatchService, StockBatchService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString)
     .UseSeeding((context, _) =>

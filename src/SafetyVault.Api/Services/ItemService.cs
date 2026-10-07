@@ -39,8 +39,6 @@ namespace SafetyVault.Api.Services
                 .FirstOrDefaultAsync();
             return item;
         }
-
-
         public async Task<CreateItemResult> CreateAsync(CreateItemDto dto)
         {
             var nameAlreadyExists = await _context.Items.AnyAsync(i => i.Name == dto.Name);

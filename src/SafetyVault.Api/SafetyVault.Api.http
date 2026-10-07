@@ -44,3 +44,12 @@ Content-Type: application/json
   "name": "multitool",
   "description": "Allzweckwerkzeug"
 }
+
+### Vorräte: Alle Chargen (Menge > 0, MHD aufsteigend, ohne MHD unten)
+GET {{host}}/api/stockbatches
+
+###Vorräte: eine Charge
+GET {{host}}/api/stockbatches/1
+
+### Vorräte: unbekannte Charge -> 404
+GET {{host}}/api/stockbatches/99
