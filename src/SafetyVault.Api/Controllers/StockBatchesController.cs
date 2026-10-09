@@ -32,6 +32,7 @@ namespace SafetyVault.Api.Controllers
             }
             return stockBatch;
         }
+
         [HttpPost]
         public async Task<ActionResult<StockBatchDto>> BookIn(BookInStockBatchDto dto)
         {
@@ -44,6 +45,23 @@ namespace SafetyVault.Api.Controllers
                     return Ok(result.StockBatch);
                 case BookInStockBatchStatus.ItemNotFound:
                     return BadRequest($"Item with ID '{dto.ItemId}' not found.");
+                default:
+                    throw new InvalidOperationException($"Unexpected status: {result.Status}");
+            }
+        }
+
+        [HttpPost("{id}/withdraw")]
+        public async Task<ActionResult<StockBatchDto>> Withdraw(int id, WithdrawStockBatchDto dto)
+        {
+            var result = await _stockBatchService.WithdrawAsync(id, dto);
+            switch (result.Status)
+            {
+                case WithdrawStockBatchStatus.Success:
+                    return Ok(result.StockBatch);
+                case WithdrawStockBatchStatus.BatchNotFound:
+                    return NotFound();
+                case WithdrawStockBatchStatus.InsufficientQuantity:
+                    return Conflict($"Cannot withdraw {dto.Quantity} items from stock batch with ID '{id}'. Not enough in stock.");
                 default:
                     throw new InvalidOperationException($"Unexpected status: {result.Status}");
             }

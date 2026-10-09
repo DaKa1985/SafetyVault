@@ -68,5 +68,22 @@ namespace SafetyVault.Api.Services
             await _context.SaveChangesAsync();
             return new BookInStockBatchResult(BookInStockBatchStatus.Created, await GetByIdAsync(newBatch.Id));
         }
+
+        public async Task<WithdrawStockBatchResult> WithdrawAsync(int stockBatchId, WithdrawStockBatchDto dto)
+        {
+            var stockBatch = await _context.StockBatches.FindAsync(stockBatchId);
+            if (stockBatch is null)
+            {
+                return new WithdrawStockBatchResult(WithdrawStockBatchStatus.BatchNotFound, null);
+            }
+            var newQuantity = stockBatch.Quantity - dto.Quantity;
+            if (newQuantity < 0)
+            {
+                return new WithdrawStockBatchResult(WithdrawStockBatchStatus.InsufficientQuantity, null);
+            }
+            stockBatch.Quantity = newQuantity;
+            await _context.SaveChangesAsync();
+            return new WithdrawStockBatchResult(WithdrawStockBatchStatus.Success, await GetByIdAsync(stockBatch.Id));
+        }
     }
 }

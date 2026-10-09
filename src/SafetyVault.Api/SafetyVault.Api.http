@@ -52,7 +52,7 @@ GET {{host}}/api/stockbatches
 GET {{host}}/api/stockbatches/1
 
 ### Vorräte: unbekannte Charge -> 404
-GET {{host}}/api/stockbatches/99
+GET {{host}}/api/stockbatches/3
 
 ### Einbuchen 1: gleiche Charge mit MHD -> 200, Menge erhöht
 POST {{host}}/api/stockbatches
@@ -102,4 +102,12 @@ Content-Type: application/json
   "itemId": 1,
   "quantity": 0,
   "bestBefore": null
+}
+
+### Entnehmen: Charge 3, 2Stück -> 200, Menge 5 -> 3
+POST {{host}}/api/stockbatches/3/withdraw
+Content-Type: application/json
+
+{
+  "quantity": 3
 }
