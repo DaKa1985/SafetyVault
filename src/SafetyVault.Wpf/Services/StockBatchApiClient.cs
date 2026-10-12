@@ -10,6 +10,7 @@ namespace SafetyVault.Wpf.Services
     {
         private readonly HttpClient _httpClient;
         private const string StockBatchesPath = "api/stockbatches";
+
         public StockBatchApiClient(HttpClient httpClient)
         {
             _httpClient = httpClient

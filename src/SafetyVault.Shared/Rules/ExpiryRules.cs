@@ -1,8 +1,4 @@
 ﻿using SafetyVault.Shared.Models;
-using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Text;
 
 namespace SafetyVault.Shared.Rules
 {
@@ -10,14 +6,16 @@ namespace SafetyVault.Shared.Rules
     {
         private const int UrgentDays = 30;
         private const int SoonDays = 90;
+
         public static int? GetDaysUntilExpiry(DateOnly? bestBefore, DateOnly today)
         {
             if (bestBefore is null)
             {
                 return null;
             }
-            return (bestBefore.Value.DayNumber - today.DayNumber);
+            return bestBefore.Value.DayNumber - today.DayNumber;
         }
+
         public static ExpiryStatus GetExpiryStatus(DateOnly? bestBefore, DateOnly today)
         {
             var daysUntilExpiry = GetDaysUntilExpiry(bestBefore, today);
