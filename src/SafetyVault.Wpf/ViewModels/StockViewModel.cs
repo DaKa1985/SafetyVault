@@ -17,6 +17,9 @@ namespace SafetyVault.Wpf.ViewModels
         private readonly IDialogService _dialogService;
         private readonly TimeProvider _timeProvider;
         private bool _isBusy;
+        private ItemDto? _selectedCatalogItem;
+        private string _newQuantityText = "1";
+        private DateTime? _newBestBefore;
 
         public StockViewModel(
             IStockBatchApiClient stockBatchApiClient,
@@ -30,9 +33,46 @@ namespace SafetyVault.Wpf.ViewModels
             _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
             WithdrawOneCommand = new AsyncRelayCommand<StockBatch>(WithdrawOneAsync, CanWithdrawOne);
             AddOneCommand = new AsyncRelayCommand<StockBatch>(AddOneAsync, CanAddOne);
+            BookInCommand = new AsyncRelayCommand(BookInAsync, CanBookIn);
         }
 
         public ObservableCollection<StockBatch> StockBatches { get; } = new ObservableCollection<StockBatch>();
+
+        public ReadOnlyObservableCollection<ItemDto> AvailableItems => _itemCatalogStore.Items;
+
+        public ItemDto? SelectedCatalogItem
+        {
+            get => _selectedCatalogItem;
+            set
+            {
+                if (_selectedCatalogItem == value) return;
+                _selectedCatalogItem = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string NewQuantityText
+        {
+            get => _newQuantityText;
+            set
+            {
+                if (_newQuantityText == value) return;
+                _newQuantityText = value;
+                OnPropertyChanged();
+                ValidateNewQuantityText();
+            }
+        }
+
+        public DateTime? NewBestBefore
+        {
+            get => _newBestBefore;
+            set
+            {
+                if (_newBestBefore == value) return;
+                _newBestBefore = value;
+                OnPropertyChanged();
+            }
+        }
 
         public bool IsBusy
         {
@@ -47,6 +87,7 @@ namespace SafetyVault.Wpf.ViewModels
 
         public AsyncRelayCommand<StockBatch> WithdrawOneCommand { get; }
         public AsyncRelayCommand<StockBatch> AddOneCommand { get; }
+        public AsyncRelayCommand BookInCommand { get; }
 
         private static StockBatch ToStockBatch(StockBatchDto dto, DateOnly today)
         {
@@ -155,6 +196,58 @@ namespace SafetyVault.Wpf.ViewModels
                     Quantity = 1,
                     BestBefore = stockBatch.BestBefore
                 });
+                await RefreshAsync();
+            }
+            catch (HttpRequestException ex)
+            {
+                _dialogService.ShowError($"Die Anfrage an den Server ist fehlgeschlagen. - {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                _dialogService.ShowError($"Die Antwort des Servers war nicht lesbar. - {ex.Message}");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        private void ValidateNewQuantityText()
+        {
+            var errors = new List<string>();
+            if (!int.TryParse(NewQuantityText, out var quantity) || quantity <= 0)
+            {
+                errors.Add("Die Menge muss eine positive Zahl sein.");
+            }
+            else if (quantity > 1000)
+            {
+                errors.Add("Die Menge darf nicht größer als 1000 sein.");
+            }
+
+            SetErrors(nameof(NewQuantityText), errors);
+        }
+
+        private bool CanBookIn()
+        {
+            return !IsBusy && SelectedCatalogItem is not null && !HasErrors;
+        }
+
+        private async Task BookInAsync()
+        {
+            if (SelectedCatalogItem is null) return;
+
+            IsBusy = true;
+            try
+            {
+                await _stockBatchApiClient.BookInAsync(new BookInStockBatchDto
+                {
+                    ItemId = SelectedCatalogItem.Id,
+                    Quantity = int.Parse(NewQuantityText),
+                    BestBefore = NewBestBefore is null ? null : DateOnly.FromDateTime(NewBestBefore.Value)
+                });
+                NewQuantityText = "1";
+                NewBestBefore = null;
+                SelectedCatalogItem = null;
                 await RefreshAsync();
             }
             catch (HttpRequestException ex)

@@ -130,6 +130,7 @@ namespace SafetyVault.Wpf.ViewModels
 
         private bool CanAddItem() =>
             !IsBusy && SelectedChecklist is not null && SelectedCatalogItem is not null && !HasErrors;
+
         private async Task DeleteItemAsync(ChecklistItem? item)
         {
             //vorher eine Bestätigung einholen, ob der Benutzer das Item wirklich löschen möchte
