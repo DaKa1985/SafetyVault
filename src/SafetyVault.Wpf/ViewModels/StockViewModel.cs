@@ -29,6 +29,7 @@ namespace SafetyVault.Wpf.ViewModels
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
             WithdrawOneCommand = new AsyncRelayCommand<StockBatch>(WithdrawOneAsync, CanWithdrawOne);
+            AddOneCommand = new AsyncRelayCommand<StockBatch>(AddOneAsync, CanAddOne);
         }
 
         public ObservableCollection<StockBatch> StockBatches { get; } = new ObservableCollection<StockBatch>();
@@ -45,6 +46,7 @@ namespace SafetyVault.Wpf.ViewModels
         }
 
         public AsyncRelayCommand<StockBatch> WithdrawOneCommand { get; }
+        public AsyncRelayCommand<StockBatch> AddOneCommand { get; }
 
         private static StockBatch ToStockBatch(StockBatchDto dto, DateOnly today)
         {
@@ -96,7 +98,7 @@ namespace SafetyVault.Wpf.ViewModels
 
         private bool CanWithdrawOne(StockBatch? stockBatch)
         {
-            return !IsBusy && stockBatch != null && stockBatch.Quantity > 0;
+            return !IsBusy && stockBatch is not null && stockBatch.Quantity > 0;
         }
 
         private async Task WithdrawOneAsync(StockBatch? stockBatch)
@@ -115,7 +117,6 @@ namespace SafetyVault.Wpf.ViewModels
             {
                 _dialogService.ShowError(ex.Message);
                 reloadNeeded = true;
-
             }
             catch (HttpRequestException ex)
             {
@@ -129,9 +130,44 @@ namespace SafetyVault.Wpf.ViewModels
             {
                 IsBusy = false;
             }
+
             if (reloadNeeded)
             {
                 await LoadAsync();
+            }
+        }
+
+        private bool CanAddOne(StockBatch? stockBatch)
+        {
+            return !IsBusy && stockBatch is not null;
+        }
+
+        private async Task AddOneAsync(StockBatch? stockBatch)
+        {
+            if (stockBatch is null) return;
+
+            IsBusy = true;
+            try
+            {
+                await _stockBatchApiClient.BookInAsync(new BookInStockBatchDto
+                {
+                    ItemId = stockBatch.ItemId,
+                    Quantity = 1,
+                    BestBefore = stockBatch.BestBefore
+                });
+                await RefreshAsync();
+            }
+            catch (HttpRequestException ex)
+            {
+                _dialogService.ShowError($"Die Anfrage an den Server ist fehlgeschlagen. - {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                _dialogService.ShowError($"Die Antwort des Servers war nicht lesbar. - {ex.Message}");
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
     }
