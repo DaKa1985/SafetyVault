@@ -13,5 +13,8 @@
         <TabItem Header="Artikel">
             <local:ItemCatalogView DataContext="{Binding ItemCatalog}"/>
         </TabItem>
+        <TabItem Header="Vorräte">
+            <local:StockView DataContext="{Binding Stock}" />
+        </TabItem>
     </TabControl>
 </Window>

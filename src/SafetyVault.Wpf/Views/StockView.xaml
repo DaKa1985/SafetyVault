@@ -1,0 +1,77 @@
+﻿<UserControl x:Class="SafetyVault.Wpf.Views.StockView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SafetyVault.Wpf.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <StackPanel Margin="0,0,10,0">
+                <Label Content="_Artikel" Target="{Binding ElementName=ItemComboBox}"/>
+                <ComboBox x:Name="ItemComboBox" Width="200" ItemsSource="{Binding AvailableItems}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedCatalogItem}" />
+            </StackPanel>
+            <StackPanel Margin="0,0,10,0">
+                <Label Content="_Menge" Target="{Binding ElementName=QuantityTextBox}" />
+                <TextBox x:Name="QuantityTextBox" Width="100" Text="{Binding NewQuantityText, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
+            <StackPanel Margin="0,0,10,0">
+                <Label Content="M_HD" Target="{Binding ElementName=BestBeforeDatePicker}"/>
+                <DatePicker x:Name="BestBeforeDatePicker" Width="150" SelectedDate="{Binding NewBestBefore}" />
+            </StackPanel>
+            <Button Content="_Einbuchen" Command="{Binding BookInCommand}" VerticalAlignment="Bottom"/>
+        </StackPanel>
+        <ListView Grid.Row="1"
+                  ItemsSource="{Binding StockBatches}">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ExpiryStatus}" Value="Expired">
+                            <Setter Property="Background" Value="#FFCDD2" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ExpiryStatus}" Value="Urgent">
+                            <Setter Property="Background" Value="#FFE0B2" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ExpiryStatus}" Value="Soon">
+                            <Setter Property="Background" Value="#FFF9C4" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ExpiryStatus}" Value="Ok">
+                            <Setter Property="Background" Value="#C8E6C9" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Artikel"
+                                DisplayMemberBinding="{Binding ItemName}" />
+                    <GridViewColumn Header="MHD"
+                                DisplayMemberBinding="{Binding BestBefore, StringFormat=dd.MM.yyyy}" />
+                    <GridViewColumn Header="Menge"
+                                DisplayMemberBinding="{Binding Quantity}" />
+                    <GridViewColumn Header="-">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Width="30" Content="-" Command="{Binding DataContext.WithdrawOneCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="+">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Width="30" Content="+" Command="{Binding DataContext.AddOneCommand, RelativeSource={RelativeSource AncestorType=ListView}}" CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Tage bis MHD"
+                                DisplayMemberBinding="{Binding DaysUntilExpiry}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
+</UserControl>
