@@ -1,6 +1,7 @@
 ﻿using SafetyVault.Shared.Models;
 using SafetyVault.Shared.Rules;
 using SafetyVault.Wpf.Common;
+using SafetyVault.Wpf.Exceptions;
 using SafetyVault.Wpf.Models;
 using SafetyVault.Wpf.Services;
 using System.Collections.ObjectModel;
@@ -27,6 +28,7 @@ namespace SafetyVault.Wpf.ViewModels
             _itemCatalogStore = itemCatalogStore ?? throw new ArgumentNullException(nameof(itemCatalogStore));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+            WithdrawOneCommand = new AsyncRelayCommand<StockBatch>(WithdrawOneAsync, CanWithdrawOne);
         }
 
         public ObservableCollection<StockBatch> StockBatches { get; } = new ObservableCollection<StockBatch>();
@@ -41,6 +43,8 @@ namespace SafetyVault.Wpf.ViewModels
                 OnPropertyChanged();
             }
         }
+
+        public AsyncRelayCommand<StockBatch> WithdrawOneCommand { get; }
 
         private static StockBatch ToStockBatch(StockBatchDto dto, DateOnly today)
         {
@@ -63,13 +67,7 @@ namespace SafetyVault.Wpf.ViewModels
 
             try
             {
-                var today = DateOnly.FromDateTime(_timeProvider.GetLocalNow().DateTime);
-                var stockBatchDtos = await _stockBatchApiClient.GetStockBatchesAsync();
-                StockBatches.Clear();
-                foreach (var dto in stockBatchDtos)
-                {
-                    StockBatches.Add(ToStockBatch(dto, today));
-                }
+                await RefreshAsync();
             }
             catch (HttpRequestException ex)
             {
@@ -82,6 +80,58 @@ namespace SafetyVault.Wpf.ViewModels
             finally
             {
                 IsBusy = false;
+            }
+        }
+
+        private async Task RefreshAsync()
+        {
+            var today = DateOnly.FromDateTime(_timeProvider.GetLocalNow().DateTime);
+            var stockBatchDtos = await _stockBatchApiClient.GetStockBatchesAsync();
+            StockBatches.Clear();
+            foreach (var dto in stockBatchDtos)
+            {
+                StockBatches.Add(ToStockBatch(dto, today));
+            }
+        }
+
+        private bool CanWithdrawOne(StockBatch? stockBatch)
+        {
+            return !IsBusy && stockBatch != null && stockBatch.Quantity > 0;
+        }
+
+        private async Task WithdrawOneAsync(StockBatch? stockBatch)
+        {
+            if (stockBatch is null) return;
+
+            var reloadNeeded = false;
+
+            IsBusy = true;
+            try
+            {
+                await _stockBatchApiClient.WithdrawAsync(stockBatch.Id, new WithdrawStockBatchDto { Quantity = 1 });
+                await RefreshAsync();
+            }
+            catch (InsufficientQuantityException ex)
+            {
+                _dialogService.ShowError(ex.Message);
+                reloadNeeded = true;
+
+            }
+            catch (HttpRequestException ex)
+            {
+                _dialogService.ShowError($"Die Anfrage an den Server ist fehlgeschlagen. - {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                _dialogService.ShowError($"Die Antwort des Servers war nicht lesbar. - {ex.Message}");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+            if (reloadNeeded)
+            {
+                await LoadAsync();
             }
         }
     }
