@@ -20,6 +20,8 @@ namespace SafetyVault.Wpf.ViewModels
         private ItemDto? _selectedCatalogItem;
         private string _newQuantityText = "1";
         private DateTime? _newBestBefore;
+        private StockBatch? _selectedStockBatch;
+        private int _selectedItemTotalQuantity;
 
         public StockViewModel(
             IStockBatchApiClient stockBatchApiClient,
@@ -37,6 +39,31 @@ namespace SafetyVault.Wpf.ViewModels
         }
 
         public ObservableCollection<StockBatch> StockBatches { get; } = new ObservableCollection<StockBatch>();
+
+        public StockBatch? SelectedStockBatch
+        {
+            get => _selectedStockBatch;
+            set
+            {
+                if (_selectedStockBatch == value) return;
+                _selectedStockBatch = value;
+                OnPropertyChanged();
+                UpdateSelectedItemDetails();
+            }
+        }
+
+        public ObservableCollection<StockBatch> SelectedItemBatches { get; } = new ObservableCollection<StockBatch>();
+
+        public int SelectedItemTotalQuantity
+        {
+            get => _selectedItemTotalQuantity;
+            private set
+            {
+                if (_selectedItemTotalQuantity == value) return;
+                _selectedItemTotalQuantity = value;
+                OnPropertyChanged();
+            }
+        }
 
         public ReadOnlyObservableCollection<ItemDto> AvailableItems => _itemCatalogStore.Items;
 
@@ -130,11 +157,35 @@ namespace SafetyVault.Wpf.ViewModels
         {
             var today = DateOnly.FromDateTime(_timeProvider.GetLocalNow().DateTime);
             var stockBatchDtos = await _stockBatchApiClient.GetStockBatchesAsync();
+            var selectedItemId = SelectedStockBatch?.ItemId;
             StockBatches.Clear();
             foreach (var dto in stockBatchDtos)
             {
                 StockBatches.Add(ToStockBatch(dto, today));
             }
+
+            if (selectedItemId.HasValue)
+            {
+                SelectedStockBatch = StockBatches.FirstOrDefault(b => b.ItemId == selectedItemId.Value);
+            }
+        }
+
+        private void UpdateSelectedItemDetails()
+        {
+            SelectedItemBatches.Clear();
+            if (SelectedStockBatch is null)
+            {
+                SelectedItemTotalQuantity = 0;
+                return;
+            }
+
+            var batches = StockBatches.Where(b => b.ItemId == SelectedStockBatch.ItemId).ToList();
+            foreach (var batch in batches)
+            {
+                SelectedItemBatches.Add(batch);
+            }
+
+            SelectedItemTotalQuantity = SelectedItemBatches.Sum(b => b.Quantity);
         }
 
         private bool CanWithdrawOne(StockBatch? stockBatch)

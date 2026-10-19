@@ -11,7 +11,11 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal" Grid.Row="0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="300" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="2">
             <StackPanel Margin="0,0,10,0">
                 <Label Content="_Artikel" Target="{Binding ElementName=ItemComboBox}"/>
                 <ComboBox x:Name="ItemComboBox" Width="200" ItemsSource="{Binding AvailableItems}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedCatalogItem}" />
@@ -27,7 +31,9 @@
             <Button Content="_Einbuchen" Command="{Binding BookInCommand}" VerticalAlignment="Bottom"/>
         </StackPanel>
         <ListView Grid.Row="1"
-                  ItemsSource="{Binding StockBatches}">
+                  Grid.Column="0"
+                  ItemsSource="{Binding StockBatches}"
+                  SelectedItem="{Binding SelectedStockBatch}">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Style.Triggers>
@@ -73,5 +79,46 @@
                 </GridView>
             </ListView.View>
         </ListView>
+        <Grid Grid.Row="1"
+              Grid.Column="1"
+              Margin="10,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Text="{Binding SelectedStockBatch.ItemName}" FontWeight="Bold" />
+            <ListView Grid.Row="1" ItemsSource="{Binding SelectedItemBatches}">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ExpiryStatus}" Value="Expired">
+                                <Setter Property="Background" Value="#FFCDD2" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ExpiryStatus}" Value="Urgent">
+                                <Setter Property="Background" Value="#FFE0B2" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ExpiryStatus}" Value="Soon">
+                                <Setter Property="Background" Value="#FFF9C4" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ExpiryStatus}" Value="Ok">
+                                <Setter Property="Background" Value="#C8E6C9" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="MHD"
+                                DisplayMemberBinding="{Binding BestBefore, StringFormat=dd.MM.yyyy}" />
+                        <GridViewColumn Header="Menge"
+                                DisplayMemberBinding="{Binding Quantity}" />
+                        <GridViewColumn Header="Tage bis MHD"
+                                DisplayMemberBinding="{Binding DaysUntilExpiry}" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <TextBlock Grid.Row="2" Text="{Binding SelectedItemTotalQuantity, StringFormat=Summe: {0}}" FontWeight="Bold" />
+        </Grid>
     </Grid>
 </UserControl>
