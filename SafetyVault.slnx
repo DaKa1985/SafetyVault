@@ -7,4 +7,7 @@
     <Project Path="src/SafetyVault.Shared/SafetyVault.Shared.csproj" />
     <Project Path="src/SafetyVault.Wpf/SafetyVault.Wpf.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SafetyVault.Shared.Tests/SafetyVault.Shared.Tests.csproj" />
+  </Folder>
 </Solution>
