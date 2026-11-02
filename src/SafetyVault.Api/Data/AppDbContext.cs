@@ -12,6 +12,7 @@ namespace SafetyVault.Api.Data
         public DbSet<Item> Items => Set<Item>();
         public DbSet<ChecklistItem> ChecklistItems => Set<ChecklistItem>();
         public DbSet<StockBatch> StockBatches => Set<StockBatch>();
+        public DbSet<User> Users => Set<User>();
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -51,6 +52,30 @@ namespace SafetyVault.Api.Data
             modelBuilder.Entity<Item>()
                 .Property(i => i.Description)
                 .HasMaxLength(500);
+            //UserName auf 100 Zeichen begrenzen
+            modelBuilder.Entity<User>()
+                .Property(u => u.UserName)
+                .HasMaxLength(100)
+                .IsRequired();
+            //UserName eindeutig, sonst wäre Login nicht eindeutig
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.UserName)
+                .IsUnique();
+            //UserEmail auf 254 Zeichen begrenzen, da dies die maximale Länge einer E-Mail-Adresse ist
+            modelBuilder.Entity<User>()
+                .Property(u => u.UserEmail)
+                .HasMaxLength(254)
+                .IsRequired();
+            //UserEmail eindeutig, sonst wäre Login nicht eindeutig
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.UserEmail)
+                .IsUnique();
+            //PasswordHash max 84 Zeichen vom PasswordHasher, plus Puffer für stärkere Verfahren
+            modelBuilder.Entity<User>()
+                .Property(u => u.PasswordHash)
+                .HasMaxLength(254)
+                .IsRequired();
+
         }
     }
 }
