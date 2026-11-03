@@ -1,0 +1,11 @@
+@host = https://localhost:7247
+
+### user anlegen
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "userName": "testuser",
+  "userEmail": "testuser@example.com",
+  "password": "TestPassword123!"
+}

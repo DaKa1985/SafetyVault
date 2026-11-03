@@ -1,5 +1,5 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi;
 using SafetyVault.Api.Data;
 using SafetyVault.Api.Entities;
 using SafetyVault.Api.Services;
@@ -15,6 +15,9 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IChecklistService, ChecklistService>();
 builder.Services.AddScoped<IItemService, ItemService>();
 builder.Services.AddScoped<IStockBatchService, StockBatchService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString)
     .UseSeeding((context, _) =>
