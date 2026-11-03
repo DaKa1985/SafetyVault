@@ -14,6 +14,8 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
+	  <!--Aufgrund vorhandener Sicherheitslück in der transitiven Version, kann wieder raus, wenn EF Core/ SqlClient selbst gepatcht werden; Prüfen mit "dotnet nuget why"-->
+	  <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
   </ItemGroup>
 
   <ItemGroup>
