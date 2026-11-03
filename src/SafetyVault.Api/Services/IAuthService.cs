@@ -6,5 +6,6 @@ namespace SafetyVault.Api.Services
     public interface IAuthService
     {
         Task<RegisterUserResult> RegisterAsync(RegisterDto dto);
+        Task<LoginUserResult> LoginAsync(LoginDto dto);
     }
 }

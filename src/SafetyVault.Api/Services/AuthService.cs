@@ -35,7 +35,7 @@ namespace SafetyVault.Api.Services
                 UserEmail = dto.UserEmail,
                 CreatedAt = _timeProvider.GetUtcNow()
             };
-            
+
             user.PasswordHash = _passwordHasher.HashPassword(user, dto.Password);
 
             _context.Users.Add(user);
@@ -47,6 +47,25 @@ namespace SafetyVault.Api.Services
                 UserEmail = user.UserEmail
             };
             return new RegisterUserResult(RegisterUserStatus.Created, userDto);
+        }
+
+        public async Task<LoginUserResult> LoginAsync(LoginDto dto)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == dto.Login || u.UserEmail == dto.Login);
+
+            if (user is null)
+            {
+                return new LoginUserResult(LoginUserStatus.InvalidCredentials, null);
+            }
+
+            var verification = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
+            if (verification == PasswordVerificationResult.Failed)
+            {
+                return new LoginUserResult(LoginUserStatus.InvalidCredentials, null);
+            }
+
+            return new LoginUserResult(LoginUserStatus.Success, null); // TODO: Token erzeugen
         }
     }
 }

@@ -5,7 +5,7 @@ POST {{host}}/api/auth/register
 Content-Type: application/json
 
 {
-  "userName": "testuser",
-  "userEmail": "testuser@example.com",
+  "userName": "TESTUSER",
+  "userEmail": "testuser3@example.com",
   "password": "TestPassword123!"
 }
