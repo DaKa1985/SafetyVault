@@ -18,6 +18,7 @@ builder.Services.AddScoped<IStockBatchService, StockBatchService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<ITokenService, TokenService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString)
     .UseSeeding((context, _) =>

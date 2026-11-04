@@ -11,12 +11,14 @@ namespace SafetyVault.Api.Services
         private readonly AppDbContext _context;
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly TimeProvider _timeProvider;
+        private readonly ITokenService _tokenService;
 
-        public AuthService(AppDbContext context, IPasswordHasher<User> passwordHasher, TimeProvider timeProvider)
+        public AuthService(AppDbContext context, IPasswordHasher<User> passwordHasher, TimeProvider timeProvider, ITokenService tokenService)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
             _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
         public async Task<RegisterUserResult> RegisterAsync(RegisterDto dto)
@@ -65,7 +67,8 @@ namespace SafetyVault.Api.Services
                 return new LoginUserResult(LoginUserStatus.InvalidCredentials, null);
             }
 
-            return new LoginUserResult(LoginUserStatus.Success, null); // TODO: Token erzeugen
+            var authResponse = _tokenService.GenerateToken(user);
+            return new LoginUserResult(LoginUserStatus.Success, authResponse);
         }
     }
 }
