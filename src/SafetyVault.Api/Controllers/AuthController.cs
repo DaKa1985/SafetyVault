@@ -9,11 +9,13 @@ namespace SafetyVault.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+
         public AuthController(IAuthService authService)
         {
             _authService = authService
                 ?? throw new ArgumentNullException(nameof(authService));
         }
+
         [HttpPost("register")]
         public async Task<ActionResult<UserDto>> Register(RegisterDto dto)
         {
@@ -26,6 +28,21 @@ namespace SafetyVault.Api.Controllers
                     return Conflict("Username already exists.");
                 case RegisterUserStatus.UserEmailAlreadyExists:
                     return Conflict("Email already exists.");
+                default:
+                    throw new InvalidOperationException($"Unexpected status: {result.Status}");
+            }
+        }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<AuthResponseDto>> Login(LoginDto dto)
+        {
+            var result = await _authService.LoginAsync(dto);
+            switch (result.Status)
+            {
+                case LoginUserStatus.Success:
+                    return Ok(result.AuthResponse);
+                case LoginUserStatus.InvalidCredentials:
+                    return Unauthorized("Invalid username/email or password.");
                 default:
                     throw new InvalidOperationException($"Unexpected status: {result.Status}");
             }
