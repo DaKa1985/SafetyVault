@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using SafetyVault.Api.Data;
 using SafetyVault.Api.Entities;
 using SafetyVault.Api.Services;
@@ -42,6 +44,31 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     )
     );
 
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+
+var jwtIssuer = jwtSettings["Issuer"]
+    ?? throw new InvalidOperationException("Konfiguration 'Jwt:Issuer' fehlt.");
+var jwtAudience = jwtSettings["Audience"]
+    ?? throw new InvalidOperationException("Konfiguration 'Jwt:Audience' fehlt.");
+var jwtSigningKey = jwtSettings["SigningKey"]
+    ?? throw new InvalidOperationException("Konfiguration 'Jwt:SigningKey' fehlt.");
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(jwtSigningKey))
+        };
+    });
 
 var app = builder.Build();
 
@@ -52,6 +79,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
