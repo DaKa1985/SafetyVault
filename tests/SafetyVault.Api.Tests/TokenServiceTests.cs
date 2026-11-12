@@ -13,16 +13,7 @@ namespace SafetyVault.Api.Tests
         {
             // Arrange
             var fakeTimeProvider = new FakeTimeProvider(new DateTimeOffset(2026, 11, 11, 10, 0, 0, TimeSpan.Zero));
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["Jwt:Issuer"] = "SafetyVault.Api",
-                    ["Jwt:Audience"] = "SafetyVault.Clients",
-                    ["Jwt:ExpiresInMinutes"] = "60",
-                    ["Jwt:SigningKey"] = Convert.ToBase64String(new byte[64])
-                })
-                .Build();
-            var tokenService = new TokenService(configuration, fakeTimeProvider);
+            var tokenService = CreateTokenService(fakeTimeProvider);
             var user = new User { Id = 1, UserName = "testuser" };
 
             // Act
@@ -38,6 +29,21 @@ namespace SafetyVault.Api.Tests
         {
             // Arrange
             var fakeTimeProvider = new FakeTimeProvider(new DateTimeOffset(2026, 11, 11, 10, 0, 0, TimeSpan.Zero));
+            var tokenService = CreateTokenService(fakeTimeProvider);
+            var user = new User { Id = 1, UserName = "testuser" };
+            
+            // Act
+            var result = tokenService.GenerateToken(user);
+            
+            // Assert
+            var handler = new JsonWebTokenHandler();
+            var jwt = handler.ReadJsonWebToken(result.Token);
+            Assert.Equal("1", jwt.Subject);
+            Assert.Equal("testuser", jwt.GetPayloadValue<string>(JwtRegisteredClaimNames.Name));
+        }
+
+        private static TokenService CreateTokenService(TimeProvider timeProvider)
+        {
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?>
                 {
@@ -47,15 +53,7 @@ namespace SafetyVault.Api.Tests
                     ["Jwt:SigningKey"] = Convert.ToBase64String(new byte[64])
                 })
                 .Build();
-            var tokenService = new TokenService(configuration, fakeTimeProvider);
-            var user = new User { Id = 1, UserName = "testuser" };
-            // Act
-            var result = tokenService.GenerateToken(user);
-            // Assert
-            var handler = new JsonWebTokenHandler();
-            var jwt = handler.ReadJsonWebToken(result.Token);
-            Assert.Equal("1", jwt.Subject);
-            Assert.Equal("testuser", jwt.GetPayloadValue<string>(JwtRegisteredClaimNames.Name));
+            return new TokenService(configuration, timeProvider);
         }
     }
 }
