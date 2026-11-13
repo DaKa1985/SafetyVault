@@ -36,3 +36,11 @@ Authorization: Bearer {{login.response.body.$.token}}
   ### verfaelschter Token (erwartet 401)
 GET {{host}}/api/checklists
 Authorization: Bearer {{login.response.body.$.token}}x
+
+### Artikel mit Token (erwartet 200)
+GET {{host}}/api/items
+Authorization: Bearer {{login.response.body.$.token}}
+
+### Vorraete mit Token (erwartet 200)
+GET {{host}}/api/stockbatches
+Authorization: Bearer {{login.response.body.$.token}}

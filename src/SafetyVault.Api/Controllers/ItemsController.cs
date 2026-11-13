@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SafetyVault.Api.Entities;
 using SafetyVault.Api.Services;
 using SafetyVault.Shared.Models;
 
 namespace SafetyVault.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ItemsController : ControllerBase
