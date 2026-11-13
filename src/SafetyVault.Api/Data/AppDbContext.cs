@@ -38,7 +38,7 @@ namespace SafetyVault.Api.Data
                 .HasMaxLength(100);
             //Artikelname eindeutig?
             modelBuilder.Entity<Item>()
-                .HasIndex(i => i.Name)
+                .HasIndex(i => new { i.UserId, i.Name })
                 .IsUnique();
             //Index auf ItemId und BestBefore in StockBatch, um doppelte Chargen für denselben Artikel und dasselbe Haltbarkeitsdatum zu verhindern, auch ohne MHD nur eine Charge pro Artikel -> kein Filter
             modelBuilder.Entity<StockBatch>()
@@ -75,7 +75,16 @@ namespace SafetyVault.Api.Data
                 .Property(u => u.PasswordHash)
                 .HasMaxLength(254)
                 .IsRequired();
-
+            modelBuilder.Entity<Checklist>()
+                .HasOne(c => c.User)
+                .WithMany()
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Item>()
+                .HasOne(i => i.User)
+                .WithMany()
+                .HasForeignKey(i => i.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

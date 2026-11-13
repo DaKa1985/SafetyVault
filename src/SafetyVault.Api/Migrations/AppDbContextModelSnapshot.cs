@@ -39,7 +39,12 @@ namespace SafetyVault.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Checklists");
                 });
@@ -93,9 +98,12 @@ namespace SafetyVault.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
+                    b.HasIndex("UserId", "Name")
                         .IsUnique();
 
                     b.ToTable("Items");
@@ -163,6 +171,17 @@ namespace SafetyVault.Api.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("SafetyVault.Api.Entities.Checklist", b =>
+                {
+                    b.HasOne("SafetyVault.Api.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("SafetyVault.Api.Entities.ChecklistItem", b =>
                 {
                     b.HasOne("SafetyVault.Api.Entities.Checklist", "Checklist")
@@ -180,6 +199,17 @@ namespace SafetyVault.Api.Migrations
                     b.Navigation("Checklist");
 
                     b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("SafetyVault.Api.Entities.Item", b =>
+                {
+                    b.HasOne("SafetyVault.Api.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SafetyVault.Api.Entities.StockBatch", b =>
