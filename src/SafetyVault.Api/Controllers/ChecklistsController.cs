@@ -42,7 +42,8 @@ namespace SafetyVault.Api.Controllers
         [HttpGet("{checklistId}/items/{id}")]
         public async Task<ActionResult<ChecklistItemDto>> GetItemById(int checklistId, int id)
         {
-            var item = await _checklistService.GetItemAsync(checklistId, id);
+            int userId = int.Parse(User.FindFirst("sub")!.Value);
+            var item = await _checklistService.GetItemAsync(userId, checklistId, id);
             if (item is null)
             {
                 return NotFound();
@@ -53,7 +54,8 @@ namespace SafetyVault.Api.Controllers
         [HttpPost("{checklistId}/items")]
         public async Task<ActionResult<ChecklistItemDto>> AddItem(int checklistId, CreateChecklistItemDto dto)
         {
-            var result = await _checklistService.AddItemAsync(checklistId, dto);
+            int userId = int.Parse(User.FindFirst("sub")!.Value);
+            var result = await _checklistService.AddItemAsync(userId, checklistId, dto);
             switch (result.Status)
             {
                 case AddChecklistItemStatus.Success:
@@ -70,14 +72,16 @@ namespace SafetyVault.Api.Controllers
         [HttpPut("{checklistId}/items/{id}")]
         public async Task<ActionResult<ChecklistItemDto>> UpdateItem(int checklistId, int id, UpdateChecklistItemDto dto)
         {
-            var updated = await _checklistService.UpdateItemAsync(checklistId, id, dto);
+            int userId = int.Parse(User.FindFirst("sub")!.Value);
+            var updated = await _checklistService.UpdateItemAsync(userId, checklistId, id, dto);
             return updated is not null ? Ok(updated) : NotFound();
         }
 
         [HttpDelete("{checklistId}/items/{id}")]
         public async Task<ActionResult> DeleteItem(int checklistId, int id)
         {
-            var success = await _checklistService.DeleteItemAsync(checklistId, id);
+            int userId = int.Parse(User.FindFirst("sub")!.Value);
+            var success = await _checklistService.DeleteItemAsync(userId, checklistId, id);
             return success ? NoContent() : NotFound();
         }
     }

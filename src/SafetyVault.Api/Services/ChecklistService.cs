@@ -15,14 +15,14 @@ namespace SafetyVault.Api.Services
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
-        public async Task<AddChecklistItemResult> AddItemAsync(int checklistId, CreateChecklistItemDto dto)
+        public async Task<AddChecklistItemResult> AddItemAsync(int userId, int checklistId, CreateChecklistItemDto dto)
         {
-            var checklistExists = await _context.Checklists.AnyAsync(c => c.Id == checklistId);
+            var checklistExists = await _context.Checklists.AnyAsync(c => c.Id == checklistId && c.UserId == userId);
             if (!checklistExists)
             {
                 return new AddChecklistItemResult(AddChecklistItemStatus.ChecklistNotFound, null);
             }
-            var item = await _context.Items.FindAsync(dto.ItemId);
+            var item = await _context.Items.FirstOrDefaultAsync(i => i.Id == dto.ItemId && i.UserId == userId);
             if (item is null)
             {
                 return new AddChecklistItemResult(AddChecklistItemStatus.ItemNotFound, null);
@@ -88,10 +88,10 @@ namespace SafetyVault.Api.Services
             return checklist;
         }
             
-        public async Task<ChecklistItemDto?> GetItemAsync(int checklistId, int checklistItemId)
+        public async Task<ChecklistItemDto?> GetItemAsync(int userId, int checklistId, int checklistItemId)
         {
             var item = await _context.ChecklistItems
-                .Where(ci => ci.ChecklistId == checklistId && ci.Id == checklistItemId)
+                .Where(ci => ci.ChecklistId == checklistId && ci.Id == checklistItemId && ci.Checklist.UserId == userId)
                 .Select(ci => new ChecklistItemDto
                 {
                     Id = ci.Id,
@@ -106,10 +106,10 @@ namespace SafetyVault.Api.Services
                 .FirstOrDefaultAsync();
             return item;
         }
-        public async Task<ChecklistItemDto?> UpdateItemAsync(int checklistId, int checklistItemId, UpdateChecklistItemDto dto)
+        public async Task<ChecklistItemDto?> UpdateItemAsync(int userId, int checklistId, int checklistItemId, UpdateChecklistItemDto dto)
         {
             var entry = await _context.ChecklistItems
-                .Where(ci => ci.ChecklistId == checklistId && ci.Id == checklistItemId)
+                .Where(ci => ci.ChecklistId == checklistId && ci.Id == checklistItemId && ci.Checklist.UserId == userId)
                 .FirstOrDefaultAsync();
             if (entry is null)
             {
@@ -130,13 +130,13 @@ namespace SafetyVault.Api.Services
             }
 
             await _context.SaveChangesAsync();
-            return await GetItemAsync(checklistId, checklistItemId);
+            return await GetItemAsync(userId, checklistId, checklistItemId);
         }
 
-        public async Task<bool> DeleteItemAsync(int checklistId, int checklistItemId)
+        public async Task<bool> DeleteItemAsync(int userId, int checklistId, int checklistItemId)
         {
             var entry = await _context.ChecklistItems
-                .Where(ci => ci.ChecklistId == checklistId && ci.Id == checklistItemId)
+                .Where(ci => ci.ChecklistId == checklistId && ci.Id == checklistItemId && ci.Checklist.UserId == userId)
                 .FirstOrDefaultAsync();
             if (entry is null)
             {
