@@ -50,7 +50,7 @@ Content-Type: application/json
 }
 
 ###
-GET {{host}}/api/checklists/1/items/1
+GET {{host}}/api/checklists
 Authorization: Bearer {{login.response.body.$.token}}
 
 ###
@@ -62,8 +62,8 @@ GET {{host}}/api/checklists
 Authorization: Bearer {{login.response.body.$.token}}x
 
 ### Artikel mit Token (erwartet 200)
-GET {{host}}/api/items/4002
-Authorization: Bearer {{login.response.body.$.token}}
+GET {{host}}/api/items
+Authorization: Bearer {{loginAnna.response.body.$.token}}
 
 ### Vorraete mit Token (erwartet 200)
 GET {{host}}/api/stockbatches

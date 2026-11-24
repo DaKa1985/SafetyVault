@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SafetyVault.Api.Extensions;
 using SafetyVault.Api.Services;
 using SafetyVault.Shared.Models;
 
@@ -20,7 +21,7 @@ namespace SafetyVault.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StockBatchDto>>> GetAll()
         {
-            var userId = int.Parse(User.FindFirst("sub")?.Value ?? throw new InvalidOperationException("User ID not found in token."));
+            var userId = User.GetUserId();
             var stockBatches = await _stockBatchService.GetAllAsync(userId);
             return stockBatches.ToList();
         }
@@ -28,7 +29,7 @@ namespace SafetyVault.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<StockBatchDto>> GetById(int id)
         {
-            var userId = int.Parse(User.FindFirst("sub")?.Value ?? throw new InvalidOperationException("User ID not found in token."));
+            var userId = User.GetUserId();
             var stockBatch = await _stockBatchService.GetByIdAsync(userId, id);
             if (stockBatch is null)
             {
@@ -40,7 +41,7 @@ namespace SafetyVault.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<StockBatchDto>> BookIn(BookInStockBatchDto dto)
         {
-            var userId = int.Parse(User.FindFirst("sub")?.Value ?? throw new InvalidOperationException("User ID not found in token."));
+            var userId = User.GetUserId();
             var result = await _stockBatchService.BookInAsync(userId, dto);
             switch (result.Status)
             {
@@ -58,7 +59,7 @@ namespace SafetyVault.Api.Controllers
         [HttpPost("{id}/withdraw")]
         public async Task<ActionResult<StockBatchDto>> Withdraw(int id, WithdrawStockBatchDto dto)
         {
-            var userId = int.Parse(User.FindFirst("sub")?.Value ?? throw new InvalidOperationException("User ID not found in token."));
+            var userId = User.GetUserId();
             var result = await _stockBatchService.WithdrawAsync(userId, id, dto);
             switch (result.Status)
             {
