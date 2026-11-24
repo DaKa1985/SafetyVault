@@ -49,9 +49,10 @@ namespace SafetyVault.Api.Services
                 ItemId = entity.ItemId
             });
         }
-        public async Task<IEnumerable<ChecklistSummaryDto>> GetAllAsync()
+        public async Task<IEnumerable<ChecklistSummaryDto>> GetAllAsync(int userId)
         {
             var checklistSummaries = await _context.Checklists
+                .Where(c => c.UserId == userId)
                 .Select(c => new ChecklistSummaryDto
                 {
                     Id = c.Id,
@@ -62,10 +63,10 @@ namespace SafetyVault.Api.Services
                 .ToListAsync();
             return checklistSummaries;
         }
-        public async Task<ChecklistDto?> GetByIdAsync(int id)
+        public async Task<ChecklistDto?> GetByIdAsync(int userId, int id)
         {
             var checklist = await _context.Checklists
-                .Where(c => c.Id == id)
+                .Where(c => c.UserId == userId && c.Id == id)
                 .Select(c => new ChecklistDto
                 {
                     Id = c.Id,

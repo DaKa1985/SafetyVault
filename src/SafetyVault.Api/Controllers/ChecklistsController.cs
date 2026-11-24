@@ -22,14 +22,16 @@ namespace SafetyVault.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ChecklistSummaryDto>>> GetAll()
         {
-            var checklists = await _checklistService.GetAllAsync();
+            int userId = int.Parse(User.FindFirst("sub")!.Value);
+            var checklists = await _checklistService.GetAllAsync(userId);
             return Ok(checklists);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ChecklistDto>> GetById(int id)
         {
-            var checklist = await _checklistService.GetByIdAsync(id);
+            int userId = int.Parse(User.FindFirst("sub")!.Value);
+            var checklist = await _checklistService.GetByIdAsync(userId, id);
             if (checklist is null)
             {
                 return NotFound();
