@@ -13,9 +13,10 @@ namespace SafetyVault.Api.Services
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<IEnumerable<ItemDto>> GetAllAsync()
+        public async Task<IEnumerable<ItemDto>> GetAllAsync(int userId)
         {
             var items = await _context.Items
+                .Where(i => i.UserId == userId)
                 .OrderBy(i => i.Name)
                 .Select(i => new ItemDto
                 {
@@ -26,10 +27,10 @@ namespace SafetyVault.Api.Services
                 .ToListAsync();
             return items;
         }
-        public async Task<ItemDto?> GetByIdAsync(int id)
+        public async Task<ItemDto?> GetByIdAsync(int userId, int id)
         {
             var item = await _context.Items
-                .Where(i => i.Id == id)
+                .Where(i => i.Id == id && i.UserId == userId)
                 .Select(i => new ItemDto
                 {
                     Id = i.Id,
@@ -39,9 +40,9 @@ namespace SafetyVault.Api.Services
                 .FirstOrDefaultAsync();
             return item;
         }
-        public async Task<CreateItemResult> CreateAsync(CreateItemDto dto)
+        public async Task<CreateItemResult> CreateAsync(int userId, CreateItemDto dto)
         {
-            var nameAlreadyExists = await _context.Items.AnyAsync(i => i.Name == dto.Name);
+            var nameAlreadyExists = await _context.Items.AnyAsync(i => i.Name == dto.Name && i.UserId == userId);
             if (nameAlreadyExists)
             {
                 return new CreateItemResult(CreateItemStatus.NameAlreadyExists, null);
@@ -50,7 +51,8 @@ namespace SafetyVault.Api.Services
             var entity = new Item
             {
                 Name = dto.Name,
-                Description = dto.Description
+                Description = dto.Description,
+                UserId = userId
             };
             _context.Items.Add(entity);
             await _context.SaveChangesAsync();

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SafetyVault.Api.Entities;
 using SafetyVault.Api.Services;
 using SafetyVault.Shared.Models;
 
@@ -23,14 +22,16 @@ namespace SafetyVault.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ItemDto>>> GetAll()
         {
-            var items = await _itemService.GetAllAsync();
+            var userId = int.Parse(User.FindFirst("sub")?.Value ?? throw new InvalidOperationException("User ID not found in token."));
+            var items = await _itemService.GetAllAsync(userId);
             return items.ToList();
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ItemDto>> GetById(int id)
         {
-            var item = await _itemService.GetByIdAsync(id);
+            var userId = int.Parse(User.FindFirst("sub")?.Value ?? throw new InvalidOperationException("User ID not found in token."));
+            var item = await _itemService.GetByIdAsync(userId, id);
             if (item is null)
             {
                 return NotFound();
@@ -41,7 +42,8 @@ namespace SafetyVault.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<ItemDto>> AddItem(CreateItemDto dto)
         {
-            var result = await _itemService.CreateAsync(dto);
+            var userId = int.Parse(User.FindFirst("sub")?.Value ?? throw new InvalidOperationException("User ID not found in token."));
+            var result = await _itemService.CreateAsync(userId, dto);
             switch (result.Status)
             {
                 case CreateItemStatus.Success:

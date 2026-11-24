@@ -4,9 +4,9 @@ namespace SafetyVault.Api.Services
 {
     public interface IItemService
     {
-        Task<IEnumerable<ItemDto>> GetAllAsync();
-        Task<ItemDto?> GetByIdAsync(int id);
-        Task<CreateItemResult> CreateAsync(CreateItemDto dto);
+        Task<IEnumerable<ItemDto>> GetAllAsync(int userId);
+        Task<ItemDto?> GetByIdAsync(int userId, int id);
+        Task<CreateItemResult> CreateAsync(int userId, CreateItemDto dto);
 
     }
 }
