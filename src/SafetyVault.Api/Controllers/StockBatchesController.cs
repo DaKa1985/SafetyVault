@@ -20,14 +20,16 @@ namespace SafetyVault.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StockBatchDto>>> GetAll()
         {
-            var stockBatches = await _stockBatchService.GetAllAsync();
+            var userId = int.Parse(User.FindFirst("sub")?.Value ?? throw new InvalidOperationException("User ID not found in token."));
+            var stockBatches = await _stockBatchService.GetAllAsync(userId);
             return stockBatches.ToList();
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<StockBatchDto>> GetById(int id)
         {
-            var stockBatch = await _stockBatchService.GetByIdAsync(id);
+            var userId = int.Parse(User.FindFirst("sub")?.Value ?? throw new InvalidOperationException("User ID not found in token."));
+            var stockBatch = await _stockBatchService.GetByIdAsync(userId, id);
             if (stockBatch is null)
             {
                 return NotFound();
@@ -38,7 +40,8 @@ namespace SafetyVault.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<StockBatchDto>> BookIn(BookInStockBatchDto dto)
         {
-            var result = await _stockBatchService.BookInAsync(dto);
+            var userId = int.Parse(User.FindFirst("sub")?.Value ?? throw new InvalidOperationException("User ID not found in token."));
+            var result = await _stockBatchService.BookInAsync(userId, dto);
             switch (result.Status)
             {
                 case BookInStockBatchStatus.Created:
@@ -55,7 +58,8 @@ namespace SafetyVault.Api.Controllers
         [HttpPost("{id}/withdraw")]
         public async Task<ActionResult<StockBatchDto>> Withdraw(int id, WithdrawStockBatchDto dto)
         {
-            var result = await _stockBatchService.WithdrawAsync(id, dto);
+            var userId = int.Parse(User.FindFirst("sub")?.Value ?? throw new InvalidOperationException("User ID not found in token."));
+            var result = await _stockBatchService.WithdrawAsync(userId, id, dto);
             switch (result.Status)
             {
                 case WithdrawStockBatchStatus.Success:

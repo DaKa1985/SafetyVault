@@ -78,3 +78,20 @@ Authorization: Bearer {{loginAnna.response.body.$.token}}
   "name": "Taschenlampe",
   "description": ""
 }
+
+### stockbatch sehen (erwartet 200)
+GET {{host}}/api/stockbatches
+Authorization: Bearer {{login.response.body.$.token}}
+
+### stockbatch sehen (erwartet 
+GET {{host}}/api/stockbatches
+Authorization: Bearer {{loginAnna.response.body.$.token}}
+
+### stockbatch anlegen (erwartet 201)
+POST {{host}}/api/stockbatches/4/withdraw 
+Content-Type: application/json
+Authorization: Bearer {{loginAnna.response.body.$.token}}
+
+{
+  "quantity": 1
+}
