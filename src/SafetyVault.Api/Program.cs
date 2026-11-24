@@ -22,27 +22,7 @@ builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<ITokenService, TokenService>();
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString)
-    .UseSeeding((context, _) =>
-    {
-        var checklists = context.Set<Checklist>();
-        if (!checklists.Any())
-        {
-            checklists.AddRange(SeedData.CreateChecklists());
-            context.SaveChanges();
-        }
-    })
-    .UseAsyncSeeding(async (context, _, cancellationToken) =>
-    {
-        var checklists = context.Set<Checklist>();
-        if (!await checklists.AnyAsync(cancellationToken))
-        {
-            checklists.AddRange(SeedData.CreateChecklists());
-            await context.SaveChangesAsync(cancellationToken);
-        }
-    }
-    )
-    );
+    options.UseSqlServer(connectionString));
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
