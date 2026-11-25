@@ -40,6 +40,10 @@ namespace SafetyVault.Api.Data
             modelBuilder.Entity<Item>()
                 .HasIndex(i => new { i.UserId, i.Name })
                 .IsUnique();
+            //Checklistenname eindeutig?
+            modelBuilder.Entity<Checklist>()
+                .HasIndex(c => new { c.UserId, c.Name })
+                .IsUnique();
             //Index auf ItemId und BestBefore in StockBatch, um doppelte Chargen für denselben Artikel und dasselbe Haltbarkeitsdatum zu verhindern, auch ohne MHD nur eine Charge pro Artikel -> kein Filter
             modelBuilder.Entity<StockBatch>()
                 .HasIndex(sb => new { sb.ItemId, sb.BestBefore })
