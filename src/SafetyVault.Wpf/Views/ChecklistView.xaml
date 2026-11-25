@@ -11,11 +11,18 @@
             <ColumnDefinition Width="200" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <ListBox Grid.Column="0"
-                 Margin="5" 
-                 ItemsSource="{Binding AvailableChecklists}"
-                 DisplayMemberPath="Name"
-                 SelectedItem="{Binding SelectedChecklist}" />
+        <DockPanel Grid.Column="0" Margin="5">
+            <StackPanel DockPanel.Dock="Bottom" Margin="0,5,0,0">
+                <Label Content="Neue _Checkliste" Target="{Binding ElementName=NewChecklistTextBox}"/>
+                <TextBox x:Name="NewChecklistTextBox"
+                 Text="{Binding NewChecklistName, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button Margin="0,5,0,0" Content="Anlegen"
+                Command="{Binding CreateChecklistCommand}"/>
+            </StackPanel>
+            <ListBox ItemsSource="{Binding AvailableChecklists}"
+             DisplayMemberPath="Name"
+             SelectedItem="{Binding SelectedChecklist}"/>
+        </DockPanel>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />

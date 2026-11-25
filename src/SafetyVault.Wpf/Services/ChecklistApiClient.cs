@@ -27,6 +27,17 @@ namespace SafetyVault.Wpf.Services
         {
             return await _httpClient.GetFromJsonAsync<ChecklistDto>($"{ChecklistsPath}/{id}");
         }
+        public async Task<ChecklistDto> CreateChecklistAsync(CreateChecklistDto dto)
+        {
+            var response = await _httpClient.PostAsJsonAsync(ChecklistsPath, dto);
+            if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                throw new Exceptions.ChecklistAlreadyExistsException(dto.Name);
+            }
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<ChecklistDto>()
+                ?? throw new InvalidOperationException("The server returned an empty response.");
+        }
 
         public async Task<ChecklistItemDto> AddItemToChecklistAsync(int checklistId, CreateChecklistItemDto dto)
         {

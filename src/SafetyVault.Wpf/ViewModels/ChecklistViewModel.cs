@@ -14,12 +14,14 @@ namespace SafetyVault.Wpf.ViewModels
         private string _newItemQuantityText = "1";
         private int _newItemQuantity;
         private int _loadVersion;
+        private string _newChecklistName = string.Empty;
         private readonly IDialogService _dialogService;
         private readonly IChecklistApiClient _apiClient;
         private readonly IItemCatalogStore _itemCatalogStore;
         private ItemDto? _selectedCatalogItem;
         private ChecklistSummaryDto? _selectedChecklist;
         private bool _isBusy;
+        
 
         public ChecklistViewModel(IDialogService dialogService, IChecklistApiClient apiClient, IItemCatalogStore itemCatalogStore)
         {
@@ -31,6 +33,7 @@ namespace SafetyVault.Wpf.ViewModels
             IncreaseQuantityCommand = new AsyncRelayCommand<ChecklistItem>(IncreaseQuantityAsync, CanIncreaseQuantity);
             DecreaseQuantityCommand = new AsyncRelayCommand<ChecklistItem>(DecreaseQuantityAsync, CanDecreaseQuantity);
             PackItemCommand = new AsyncRelayCommand<ChecklistItem>(PackItemAsync, CanPackItem);
+            CreateChecklistCommand = new AsyncRelayCommand(CreateChecklistAsync, CanCreateChecklist);
             ValidateNewItemQuantityText();
         }
 
@@ -55,6 +58,16 @@ namespace SafetyVault.Wpf.ViewModels
             {
                 if (_selectedCatalogItem == value) return;
                 _selectedCatalogItem = value;
+                OnPropertyChanged();
+            }
+        }
+        public string NewChecklistName
+        {
+            get => _newChecklistName;
+            set
+            {
+                if (_newChecklistName == value) return;
+                _newChecklistName = value;
                 OnPropertyChanged();
             }
         }
@@ -84,6 +97,7 @@ namespace SafetyVault.Wpf.ViewModels
         public ICommand IncreaseQuantityCommand { get; }
         public ICommand DecreaseQuantityCommand { get; }
         public ICommand PackItemCommand { get; }
+        public ICommand CreateChecklistCommand { get; }
         private async Task AddItemAsync()
         {
             if (SelectedChecklist is null || SelectedCatalogItem is null) return;
@@ -259,6 +273,51 @@ namespace SafetyVault.Wpf.ViewModels
             }
         }
 
+        private async Task CreateChecklistAsync()
+        {
+            
+            ChecklistSummaryDto? newChecklist = null;
+            IsBusy = true;
+            try
+            {
+                var dto = new CreateChecklistDto { Name = NewChecklistName.Trim() };
+                var created = await _apiClient.CreateChecklistAsync(dto);
+                newChecklist = new ChecklistSummaryDto
+                {
+                    Id = created.Id,
+                    Name = created.Name,
+                    Description = created.Description,
+                    ItemCount = 0
+                };
+                AvailableChecklists.Add(newChecklist);
+                NewChecklistName = string.Empty;
+            }
+            catch (Exceptions.ChecklistAlreadyExistsException ex)
+            {
+                _dialogService.ShowError($"Fehler beim Erstellen der Checkliste: {ex.Message}");
+            }
+            catch (HttpRequestException ex)
+            {
+                _dialogService.ShowError($"Die Anwendung konnte den Server nicht erreichen. Prüfen Sie, ob die API läuft. - {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                _dialogService.ShowError($"Die Antwort des Servers war nicht lesbar.- {ex.Message}");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _dialogService.ShowError($"Fehler beim Erstellen der Checkliste: {ex.Message}");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+            if (newChecklist is not null)
+            {
+                SelectedChecklist = newChecklist;
+            }
+        }
+
         private bool CanIncreaseQuantity(ChecklistItem? item) =>
             !IsBusy && item is not null && !item.IsPacked;
         private async Task IncreaseQuantityAsync(ChecklistItem? item)
@@ -280,5 +339,7 @@ namespace SafetyVault.Wpf.ViewModels
             if (item is null) return;
             await UpdateActualQuantityAsync(item, item.TargetQuantity);
         }
+        private bool CanCreateChecklist() =>
+            !IsBusy && !string.IsNullOrWhiteSpace(NewChecklistName);
     }
 }
