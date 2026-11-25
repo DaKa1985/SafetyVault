@@ -11,14 +11,20 @@ Web-Client für das Smartphone und die Anbindung an Azure.
 
 ## Funktionen
 
-| Modul              | Beschreibung                                                                                              | Stand        |
-| ------------------ | --------------------------------------------------------------------------------------------------------- | ------------ |
-| Checklisten        | Notfallrucksäcke und Packlisten anlegen, Artikel mit Soll- und Ist-Menge zuordnen und als gepackt abhaken | ✅ fertig    |
-| Vorräte            | Chargen mit Menge und Mindesthaltbarkeitsdatum erfassen; eine Ampel zeigt, was bald abläuft               | ✅ fertig    |
-| Benutzerkonten     | Registrierung und Anmeldung per JWT; jeder Benutzer sieht nur seine eigenen Daten                         | 🚧 in Arbeit |
-| Dokumenten-Tresor  | Wichtige Unterlagen verschlüsselt in der Cloud (Azure Blob Storage) ablegen                               | 🗓️ geplant   |
-| Web-Zugriff        | Zugriff auf Checklisten und Dokumente unterwegs per Smartphone oder Browser (Blazor)                      | 🗓️ geplant   |
-| Benachrichtigungen | Hinweise auf ablaufende Vorräte (Azure Service Bus)                                                       | 🗓️ geplant   |
+| Modul              | Beschreibung                                                                                                          | Stand      |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Checklisten        | Eigene Checklisten anlegen, Artikel mit Soll- und Ist-Menge zuordnen und als gepackt abhaken                          | ✅ fertig  |
+| Vorräte            | Chargen mit Menge und Mindesthaltbarkeitsdatum erfassen; eine Ampel zeigt, was bald abläuft                           | ✅ fertig  |
+| Benutzerkonten     | Registrierung und Anmeldung per JWT, Login und Logout im Desktop-Client; jeder Benutzer sieht nur seine eigenen Daten | ✅ fertig  |
+| Dokumenten-Tresor  | Wichtige Unterlagen verschlüsselt in der Cloud (Azure Blob Storage) ablegen                                           | 🗓️ geplant |
+| Web-Zugriff        | Checklisten und Dokumente unterwegs per Smartphone oder Browser abrufen (Blazor)                                      | 🗓️ geplant |
+| Benachrichtigungen | Hinweise auf ablaufende Vorräte (Azure Service Bus)                                                                   | 🗓️ geplant |
+
+## Screenshots
+
+| Anmeldung                                    | Checklisten                                             | Vorräte                                                    |
+| -------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------- |
+| ![Login-Ansicht](docs/screenshots/login.png) | ![Checklisten-Reiter](docs/screenshots/checklisten.png) | ![Vorrats-Reiter mit Ampel](docs/screenshots/vorraete.png) |
 
 ## Architektur
 
@@ -64,16 +70,79 @@ von API und Clients genutzt.
 - **Getrennte DTOs je Richtung:** Eingabe- und Ausgabemodelle sind getrennt. Das schützt vor
   Overposting (Clients können keine Felder setzen, die sie nicht setzen dürfen).
 - **Result Pattern:** Services liefern ein Ergebnisobjekt statt HTTP-Statuscodes. Erst der
-  Controller übersetzt es in `200`, `404` oder `409`.
+  Controller übersetzt es in `200`, `201`, `404` oder `409`.
 - **Datenbank in 3. Normalform:** Abgeleitete Werte (z. B. „gepackt“ oder „Tage bis
   Ablauf“) werden berechnet statt gespeichert; Eindeutigkeit wird über Unique Indizes abgesichert.
 - **Sicherheit:** Kennwörter nur als Hash, JWT mit Prüfung von Aussteller, Empfänger,
   Laufzeit und Signatur. Beim Login gibt es keine Hinweise darauf, ob ein Benutzer existiert.
-- **Datenhoheit:** Jeder Benutzer sieht nur seine eigenen Daten. Fremde Datensätze werden
-  mit `404` beantwortet (Schutz vor IDOR). _(in Arbeit)_
+- **Datenhoheit:** Jeder Benutzer sieht nur seine eigenen Daten. Die Benutzer-Id kommt ausschließlich
+  aus dem geprüften Token, nie aus der Anfrage; fremde Datensätze werden mit `404` beantwortet
+  (Schutz vor IDOR). Namen sind pro Benutzer eindeutig, damit keine Fehlermeldung fremde Daten verrät.
+- **Login im Desktop-Client:** Der Token wird im gemeinsam genutzten `HttpClient` hinterlegt, Daten werden
+  erst nach der Anmeldung geladen, und beim Abmelden werden Token und Eingabefelder geleert.
 - **Keine Geheimnisse im Repo:** User Secrets und `.env`; die Git-Historie ist mit gitleaks geprüft.
+  Bewusst ohne Demo-Benutzer mit festem Kennwort.
 - **Testbare Zeit:** Datumslogik nutzt `TimeProvider`, damit Unit-Tests mit einer festen
   Uhr laufen.
+
+## Lokal starten
+
+### Voraussetzungen
+
+- Windows mit [.NET 10 SDK](https://dotnet.microsoft.com/download) (der WPF-Client läuft nur unter Windows)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) für SQL Server
+  (das SQL-Server-Image gibt es nur für x86-64; auf ARM-Rechnern einen lokal installierten SQL Server verwenden)
+- EF-Core-Werkzeug: `dotnet tool install --global dotnet-ef`
+
+### 1. Datenbank starten
+
+```powershell
+git clone https://github.com/DaKa1985/SafetyVault.git
+cd SafetyVault
+copy .env.example .env        # in .env ein eigenes, starkes sa-Kennwort eintragen
+docker compose up -d
+```
+
+### 2. Geheimnisse der API setzen (User Secrets, landen nicht im Repo)
+
+```powershell
+# Verbindungszeichenfolge – Kennwort wie in .env
+dotnet user-secrets set "ConnectionStrings:SafetyVaultDb" "Server=127.0.0.1,1433;Database=SafetyVault;User Id=sa;Password=<dein-Kennwort>;TrustServerCertificate=True" --project src\SafetyVault.Api
+
+# Zufälliger Signaturschlüssel für JWT (64 Bytes, Base64)
+$bytes = New-Object byte[] 64
+[System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+dotnet user-secrets set "Jwt:SigningKey" ([Convert]::ToBase64String($bytes)) --project src\SafetyVault.Api
+```
+
+### 3. Datenbank anlegen und API starten
+
+```powershell
+dotnet dev-certs https --trust
+dotnet ef database update --project src\SafetyVault.Api
+dotnet run --project src\SafetyVault.Api --launch-profile https
+```
+
+Die API läuft dann unter `https://localhost:7247`.
+
+### 4. Benutzer registrieren
+
+Die Datenbank startet bewusst leer. In Visual Studio `src/SafetyVault.Api/auth.http` öffnen und die Anfrage
+`POST /api/auth/register` mit eigenem Benutzernamen, eigener E-Mail und eigenem Kennwort senden (erwartet `201 Created`).
+
+### 5. Desktop-Client starten
+
+```powershell
+dotnet run --project src\SafetyVault.Wpf
+```
+
+Mit dem registrierten Benutzer anmelden, eine Checkliste anlegen und loslegen.
+
+### Tests
+
+```powershell
+dotnet test
+```
 
 ## Fahrplan
 
@@ -82,9 +151,10 @@ von API und Clients genutzt.
 - [x] Vorrats-Modul mit Haltbarkeits-Ampel
 - [x] Unit-Tests
 - [x] Registrierung und Login mit JWT
-- [ ] Datenhoheit pro Benutzer und Login im WPF-Client
+- [x] Datenhoheit pro Benutzer, Login und Logout im WPF-Client
+- [x] Eigene Checklisten anlegen
 - [ ] Dokumenten-Tresor mit Verschlüsselung und Azure Blob Storage
-- [ ] Web-Client mit Blazor
+- [ ] Web-Client mit Blazor (Dokumente und Checklisten abrufen)
 - [ ] Benachrichtigungen über Azure Service Bus
 - [ ] Integrationstests
 - [ ] Containerisierung und Deployment nach Azure mit CI/CD-Pipeline
