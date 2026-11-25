@@ -51,7 +51,7 @@ Content-Type: application/json
 
 ###
 GET {{host}}/api/checklists
-Authorization: Bearer {{login.response.body.$.token}}
+Authorization: Bearer {{loginAnna.response.body.$.token}}
 
 ###
 GET {{host}}/api/checklists/1/items/1
@@ -60,6 +60,16 @@ Authorization: Bearer {{loginAnna.response.body.$.token}}
 ### verfaelschter Token (erwartet 401)
 GET {{host}}/api/checklists
 Authorization: Bearer {{login.response.body.$.token}}x
+
+### Anlegen einer Checkliste (erwartet 201)
+POST {{host}}/api/checklists
+Content-Type: application/json
+Authorization: Bearer {{loginAnna.response.body.$.token}}
+
+{
+  "name": "Notfallrucksack",
+  "description": "Das ist der Standardnotfallrucksack"
+}
 
 ### Artikel mit Token (erwartet 200)
 GET {{host}}/api/items

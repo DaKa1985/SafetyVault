@@ -6,6 +6,7 @@ namespace SafetyVault.Api.Services
     {
         Task<IEnumerable<ChecklistSummaryDto>> GetAllAsync(int userId);
         Task<ChecklistDto?> GetByIdAsync(int userId, int id);
+        Task<CreateChecklistResult> CreateAsync(int userId, CreateChecklistDto dto);
         Task<ChecklistItemDto?> GetItemAsync(int userId, int checklistId, int checklistItemId);
         Task<AddChecklistItemResult> AddItemAsync(int userId, int checklistId, CreateChecklistItemDto dto);
         Task<ChecklistItemDto?> UpdateItemAsync(int userId, int checklistId, int checklistItemId, UpdateChecklistItemDto dto);

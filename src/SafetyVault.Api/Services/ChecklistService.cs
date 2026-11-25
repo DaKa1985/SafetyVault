@@ -146,5 +146,30 @@ namespace SafetyVault.Api.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<CreateChecklistResult> CreateAsync(int userId, CreateChecklistDto dto)
+        {
+            var nameExists = await _context.Checklists.AnyAsync(c => c.UserId == userId && c.Name == dto.Name);
+            if (nameExists)
+            {
+                return new CreateChecklistResult(CreateChecklistStatus.NameAlreadyExists, null);
+            }
+            var entity = new Checklist
+            {
+                UserId = userId,
+                Name = dto.Name,
+                Description = dto.Description
+            };
+            _context.Checklists.Add(entity);
+            await _context.SaveChangesAsync();
+            var checklistDto = new ChecklistDto
+            {
+                Id = entity.Id,
+                Name = entity.Name,
+                Description = entity.Description,
+                Items = new List<ChecklistItemDto>()
+            };
+            return new CreateChecklistResult(CreateChecklistStatus.Success, checklistDto);
+        }
     }
 }

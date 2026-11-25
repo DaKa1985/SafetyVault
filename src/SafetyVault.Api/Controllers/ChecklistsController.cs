@@ -40,6 +40,22 @@ namespace SafetyVault.Api.Controllers
             return Ok(checklist);
         }
 
+        [HttpPost]
+        public async Task<ActionResult<ChecklistDto>> Create(CreateChecklistDto dto)
+        {
+            int userId = User.GetUserId();
+            var result = await _checklistService.CreateAsync(userId, dto);
+            switch (result.Status)
+            {
+                case CreateChecklistStatus.Success:
+                    return CreatedAtAction(nameof(GetById), new { id = result.Checklist!.Id }, result.Checklist);
+                case CreateChecklistStatus.NameAlreadyExists:
+                    return Conflict("A checklist with the same name already exists.");
+                default:
+                    throw new InvalidOperationException($"Unexpected status: {result.Status}");
+            }
+        }
+
         [HttpGet("{checklistId}/items/{id}")]
         public async Task<ActionResult<ChecklistItemDto>> GetItemById(int checklistId, int id)
         {
