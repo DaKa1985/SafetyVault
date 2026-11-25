@@ -1,5 +1,7 @@
-﻿using SafetyVault.Wpf.Services;
+﻿using SafetyVault.Wpf.Common;
+using SafetyVault.Wpf.Services;
 using System.ComponentModel;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 
 namespace SafetyVault.Wpf.ViewModels
@@ -14,6 +16,7 @@ namespace SafetyVault.Wpf.ViewModels
         public LoginViewModel(IAuthApiClient authApiClient)
         {
             _authApiClient = authApiClient ?? throw new ArgumentNullException(nameof(authApiClient));
+            LoginCommand = new AsyncRelayCommand(LoginAsync, () => !string.IsNullOrWhiteSpace(Login) && !string.IsNullOrWhiteSpace(Password));
         }
 
         public string Login
@@ -43,9 +46,33 @@ namespace SafetyVault.Wpf.ViewModels
                 OnPropertyChanged();
             }
         }
+        public AsyncRelayCommand LoginCommand { get; }
+
+        public event EventHandler? LoggedIn;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        private async Task LoginAsync()
+        {
+            ErrorMessage = null;
+            try
+            {
+                bool loginOk = await _authApiClient.LoginAsync(Login, Password);
+                if (loginOk)
+                {
+                    Password = string.Empty;
+                    LoggedIn?.Invoke(this, EventArgs.Empty);
+                }
+                else
+                {
+                    ErrorMessage = "Benutzername oder Kennwort falsch.";
+                }
+            }
+            catch (HttpRequestException )
+            {
+                ErrorMessage = "Api nicht erreichbar. Bitte später erneut versuchen.";
+            }
+        }
         private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
