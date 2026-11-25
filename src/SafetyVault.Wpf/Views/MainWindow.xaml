@@ -13,16 +13,19 @@
         <Grid Visibility="{Binding IsLoggedOut, Converter={StaticResource BooleanToVisibilityConverter}}">
             <local:LoginView DataContext="{Binding Login}"/>
         </Grid>
-        <TabControl Visibility="{Binding IsLoggedIn, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <TabItem Header="Checklisten">
-                <local:ChecklistView DataContext="{Binding Checklists}"/>
-            </TabItem>
-            <TabItem Header="Artikel">
-                <local:ItemCatalogView DataContext="{Binding ItemCatalog}"/>
-            </TabItem>
-            <TabItem Header="Vorräte">
-                <local:StockView DataContext="{Binding Stock}" />
-            </TabItem>
-        </TabControl>
+        <DockPanel Visibility="{Binding IsLoggedIn, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Button Content="Abmelden" Command="{Binding LogoutCommand}" DockPanel.Dock="Top" HorizontalAlignment="Right" Width="100" Margin="5"/>
+            <TabControl>
+                <TabItem Header="Checklisten">
+                    <local:ChecklistView DataContext="{Binding Checklists}"/>
+                </TabItem>
+                <TabItem Header="Artikel">
+                    <local:ItemCatalogView DataContext="{Binding ItemCatalog}"/>
+                </TabItem>
+                <TabItem Header="Vorräte">
+                    <local:StockView DataContext="{Binding Stock}" />
+                </TabItem>
+            </TabControl>
+        </DockPanel>
     </Grid>
 </Window>

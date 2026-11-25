@@ -73,6 +73,15 @@ namespace SafetyVault.Wpf.ViewModels
                 ErrorMessage = "Api nicht erreichbar. Bitte später erneut versuchen.";
             }
         }
+
+        public void Logout()
+        {
+            _authApiClient.Logout();
+            Login = string.Empty;
+            Password = string.Empty;
+            ErrorMessage = null;
+        }
+
         private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

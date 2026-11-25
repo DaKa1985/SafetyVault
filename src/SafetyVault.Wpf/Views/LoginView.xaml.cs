@@ -11,6 +11,15 @@ namespace SafetyVault.Wpf.Views
         public LoginView()
         {
             InitializeComponent();
+            IsVisibleChanged += LoginView_IsVisibleChanged;
+        }
+
+        private void LoginView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (IsVisible)
+            {
+                PasswordInput.Clear();
+            }
         }
 
         private void PasswordInput_PasswordChanged(object sender, RoutedEventArgs e)
