@@ -11,10 +11,6 @@ namespace SafetyVault.Wpf.Views
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly ChecklistViewModel _checklistViewModel;
-        private readonly ItemCatalogViewModel _itemCatalogViewModel;
-        private readonly StockViewModel _stockViewModel;
-
         public MainWindow()
         {
             InitializeComponent();
@@ -25,23 +21,21 @@ namespace SafetyVault.Wpf.Views
             var baseAddress = configuration["Api:BaseAddress"]
                 ?? throw new InvalidOperationException("API base address is not configured.");
             var httpClient = new HttpClient { BaseAddress = new Uri(baseAddress) };
+
+            var authApiClient = new AuthApiClient(httpClient);
+            var loginViewModel = new LoginViewModel(authApiClient);
+
             var dialogService = new DialogService();
             var apiClient = new ChecklistApiClient(httpClient);
             var itemApiClient = new ItemApiClient(httpClient);
             var itemCatalogStore = new ItemCatalogStore(itemApiClient);
-            _checklistViewModel = new ChecklistViewModel(dialogService, apiClient, itemCatalogStore);
-            _itemCatalogViewModel = new ItemCatalogViewModel(itemApiClient, dialogService, itemCatalogStore);
             var stockBatchApiClient = new StockBatchApiClient(httpClient);
-            _stockViewModel = new StockViewModel(stockBatchApiClient, itemCatalogStore, dialogService, TimeProvider.System);
-            DataContext = new MainViewModel(_checklistViewModel, _itemCatalogViewModel, _stockViewModel);
-            Loaded += MainWindow_Loaded;
-        }
 
-        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            await _checklistViewModel.LoadAsync();
-            await _itemCatalogViewModel.LoadItemsAsync();
-            await _stockViewModel.LoadAsync();
+            var checklistViewModel = new ChecklistViewModel(dialogService, apiClient, itemCatalogStore);
+            var itemCatalogViewModel = new ItemCatalogViewModel(itemApiClient, dialogService, itemCatalogStore);
+            var stockViewModel = new StockViewModel(stockBatchApiClient, itemCatalogStore, dialogService, TimeProvider.System);
+
+            DataContext = new MainViewModel(checklistViewModel, itemCatalogViewModel, stockViewModel, loginViewModel);
         }
     }
 }
